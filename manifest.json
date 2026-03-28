@@ -1,0 +1,24 @@
+{
+  "name": "HYROX PBC — Guero",
+  "short_name": "HYROX PBC",
+  "description": "Hyrox training tracker · Race day 16 Mayo 2026 · Sub 1:40",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0a0a0a",
+  "background_color": "#0a0a0a",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

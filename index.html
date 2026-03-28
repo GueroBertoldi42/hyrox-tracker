@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HYROX PBC">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="manifest" href="manifest.json">
+<title>HYROX PBC — Guero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: #222222;
+    --accent: #e8ff00;
+    --accent2: #ff3b3b;
+    --text: #f0f0f0;
+    --muted: #555;
+    --muted2: #333;
+    --green: #00ff87;
+    --orange: #ff8c00;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    max-width: 430px;
+    margin: 0 auto;
+    padding-bottom: 80px;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  .nav {
+    position: fixed;
+    bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 430px;
+    background: rgba(10,10,10,0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .nav-btn {
+    flex: 1; padding: 12px 4px 10px;
+    background: none; border: none; color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 8px; letter-spacing: 0.06em; text-transform: uppercase;
+    cursor: pointer; display: flex; flex-direction: column;
+    align-items: center; gap: 4px; transition: color 0.2s;
+  }
+  .nav-btn.active { color: var(--accent); }
+  .nav-btn svg { width: 18px; height: 18px; }
+
+  /* SCREENS */
+  .screen { display: none; padding: 0; }
+  .screen.active { display: block; }
+
+  /* HEADER */
+  .header {
+    padding: 56px 20px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-end; justify-content: space-between;
+  }
+  .header-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.15em;
+    color: var(--muted); text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .header-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px; line-height: 1;
+    letter-spacing: 0.02em;
+  }
+  .accent { color: var(--accent); }
+
+  /* SETTINGS BUTTON */
+  .btn-settings {
+    background: none; border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px;
+    color: var(--muted); cursor: pointer;
+    flex-shrink: 0; margin-bottom: 4px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-settings:active { border-color: var(--accent); color: var(--accent); }
+  .btn-settings svg { width: 18px; height: 18px; display: block; }
+
+  /* HOME */
+  .countdown-block {
+    margin: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .countdown-block::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+  .countdown-row {
+    display: flex; gap: 12px; align-items: flex-end; margin-bottom: 12px;
+  }
+  .countdown-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px; line-height: 1; color: var(--accent);
+  }
+  .countdown-unit {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.1em;
+    color: var(--muted); text-transform: uppercase;
+    padding-bottom: 14px;
+  }
+  .countdown-meta {
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .meta-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px; padding: 4px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.08em;
+    color: var(--muted); text-transform: uppercase;
+  }
+  .meta-pill span { color: var(--text); }
+
+  .today-block {
+    margin: 0 20px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .today-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.12em;
+    color: var(--muted); text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .today-workout {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px; letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+  .today-focus {
+    font-size: 13px; color: var(--muted);
+    line-height: 1.5; margin-bottom: 16px;
+  }
+  .today-focus strong { color: var(--text); }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px; letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn-primary:active { opacity: 0.85; transform: scale(0.99); }
+  .btn-primary:disabled { opacity: 0.3; cursor: default; }
+
+  .btn-secondary {
+    width: 100%;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 13px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px; letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    margin-top: 8px;
+  }
+  .btn-secondary:active { border-color: var(--accent); }
+
+  /* WEEK GRID */
+  .section-header {
+    padding: 20px 20px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.15em;
+    color: var(--muted); text-transform: uppercase;
+  }
+  .week-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 6px; padding: 0 20px 20px;
+  }
+  .day-cell {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px; cursor: pointer;
+    transition: border-color 0.2s, transform 0.1s;
+    position: relative;
+  }
+  .day-cell:active { transform: scale(0.95); }
+  .day-cell.done { border-color: var(--green); }
+  .day-cell.missed { border-color: var(--accent2); opacity: 0.6; }
+  .day-cell.today { border-color: var(--accent); }
+  .day-cell.rest { opacity: 0.4; }
+  .day-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px; letter-spacing: 0.08em;
+    color: var(--muted); text-transform: uppercase;
+  }
+  .day-icon { font-size: 14px; }
+  .day-cell.done .day-icon::after { content: '✓'; color: var(--green); font-size: 16px; }
+  .day-cell.missed .day-icon::after { content: '✗'; color: var(--accent2); font-size: 16px; }
+
+  /* CHECK-IN */
+  .checkin-header {
+    padding: 56px 20px 24px;
+  }
+  .checkin-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px; letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .checkin-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+
+  /* DATE SELECTOR */
+  .date-selector-wrap {
+    display: flex; align-items: center; gap: 8px;
+    margin: 0 20px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 4px;
+  }
+  .date-arrow {
+    background: none; border: none;
+    color: var(--muted); font-size: 24px;
+    width: 40px; height: 48px;
+    cursor: pointer; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    transition: color 0.15s, background 0.15s;
+    flex-shrink: 0;
+  }
+  .date-arrow:active { color: var(--accent); background: var(--surface2); }
+  .date-selector-center { flex: 1; position: relative; text-align: center; }
+  .date-input-hidden {
+    position: absolute; inset: 0; opacity: 0;
+    width: 100%; height: 100%; cursor: pointer;
+  }
+  .date-display { padding: 8px 4px; cursor: pointer; }
+  .date-display-day {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: 0.06em;
+    color: var(--text); line-height: 1;
+  }
+  .date-display-workout {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.1em;
+    color: var(--muted); text-transform: uppercase;
+    margin-top: 3px;
+  }
+  .date-selector-wrap.today-date { border-color: var(--accent); }
+  .date-selector-wrap.today-date .date-display-day { color: var(--accent); }
+  .date-selector-wrap.future-date { border-color: var(--muted2); opacity: 0.7; }
+
+  .photo-drop {
+    margin: 0 20px 16px;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: 16px;
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    position: relative;
+  }
+  .photo-drop:hover { border-color: var(--accent); }
+  .photo-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .photo-drop-icon { font-size: 32px; margin-bottom: 8px; }
+  .photo-drop-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.1em;
+    color: var(--muted); text-transform: uppercase;
+  }
+  .photo-drop-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .analyzing-state {
+    display: none;
+    align-items: center; gap: 10px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border-radius: 12px;
+    margin: 0 20px 16px;
+  }
+  .analyzing-state.show { display: flex; }
+  .spin {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .form-group {
+    margin: 0 20px 14px;
+  }
+  .form-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.1em;
+    color: var(--muted); text-transform: uppercase;
+    margin-bottom: 8px; display: block;
+  }
+  .form-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    transition: border-color 0.2s;
+    outline: none;
+    -webkit-appearance: none;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-input.extracted { border-color: var(--green); color: var(--green); }
+
+  .form-row { display: flex; gap: 10px; margin: 0 20px 14px; }
+  .form-row .form-group { margin: 0; flex: 1; }
+
+  .segments-preview {
+    margin: 0 20px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: none;
+  }
+  .segments-preview.show { display: block; }
+  .seg-header {
+    padding: 10px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.12em;
+    color: var(--muted); text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    display: grid; grid-template-columns: 20px 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .seg-row {
+    padding: 8px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    display: grid; grid-template-columns: 20px 1fr 1fr 1fr;
+    gap: 8px; border-bottom: 1px solid var(--muted2);
+  }
+  .seg-row:last-child { border-bottom: none; }
+  .seg-num { color: var(--muted); }
+  .seg-type-run { color: var(--accent); }
+  .seg-type-station { color: var(--orange); }
+
+  .submit-area { padding: 0 20px 20px; }
+
+  /* ANALYTICS */
+  .chart-card {
+    margin: 0 20px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .chart-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.12em;
+    color: var(--muted); text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .chart-wrap { position: relative; height: 160px; }
+
+  .stats-row {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; padding: 0 20px 16px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 12px;
+  }
+  .stat-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px; color: var(--accent);
+    line-height: 1;
+  }
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.1em;
+    color: var(--muted); text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* HISTORY */
+  .history-list { padding: 0 20px; }
+  .history-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .history-dot {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .history-info { flex: 1; min-width: 0; }
+  .history-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px; letter-spacing: 0.04em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .history-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; color: var(--muted); margin-top: 2px;
+    letter-spacing: 0.06em;
+  }
+  .history-bpm {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; color: var(--accent2);
+    text-align: right; flex-shrink: 0;
+  }
+  .history-bpm-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px; color: var(--muted); text-align: right;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+
+  .empty-state {
+    text-align: center; padding: 48px 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    line-height: 2;
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200; align-items: flex-end;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 24px 24px 0 0;
+    border-top: 1px solid var(--border);
+    width: 100%; padding: 24px 20px 40px;
+    animation: slideUp 0.3s ease;
+    max-height: 80vh; overflow-y: auto;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } }
+  .modal-handle {
+    width: 36px; height: 4px;
+    background: var(--border); border-radius: 2px;
+    margin: 0 auto 20px;
+  }
+  .modal-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px; letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .modal-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; color: var(--muted);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  /* PROGRESS BAR */
+  .progress-bar-wrap {
+    background: var(--surface2);
+    border-radius: 4px; height: 6px;
+    margin: 10px 0;
+  }
+  .progress-bar-fill {
+    height: 100%; border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--green));
+    transition: width 0.6s ease;
+  }
+
+  .toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 12px; padding: 10px 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.1em;
+    color: var(--accent); text-transform: uppercase;
+    z-index: 300; white-space: nowrap;
+    animation: fadeInOut 2.5s ease forwards;
+  }
+  @keyframes fadeInOut {
+    0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    75% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  .race-goal {
+    margin: 0 20px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 16px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .race-goal-icon { font-size: 28px; }
+  .race-goal-info { flex: 1; }
+  .race-goal-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.12em;
+    color: var(--muted); text-transform: uppercase;
+  }
+  .race-goal-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px; color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+
+  /* API KEY indicator */
+  .api-key-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 12px;
+  }
+  .api-key-badge .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent2);
+  }
+  .api-key-badge.ok .dot { background: var(--green); }
+  .api-key-badge.ok { color: var(--green); }
+
+  /* COACH AI */
+  .coach-card {
+    margin: 0 20px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .coach-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, #a855f7, #3b82f6, var(--accent));
+  }
+  .coach-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .coach-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: #a855f7; margin-bottom: 4px;
+  }
+  .coach-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px; letter-spacing: 0.04em; line-height: 1;
+  }
+  .coach-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+    border-radius: 20px; padding: 5px 12px; font-weight: 500;
+  }
+  .coach-badge.on-track { background: rgba(0,255,135,0.15); color: var(--green); border: 1px solid var(--green); }
+  .coach-badge.at-risk  { background: rgba(255,140,0,0.15);  color: var(--orange); border: 1px solid var(--orange); }
+  .coach-badge.behind   { background: rgba(255,59,59,0.15);  color: var(--accent2); border: 1px solid var(--accent2); }
+  .coach-empty {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); text-align: center; padding: 16px 0; line-height: 1.8;
+  }
+  .coach-headline {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 0.04em;
+    color: var(--text); margin-bottom: 8px;
+  }
+  .coach-summary {
+    font-size: 13px; color: var(--muted); line-height: 1.6;
+    margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 14px;
+  }
+  .coach-summary strong { color: var(--text); }
+  .coach-recs { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .coach-rec {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: var(--surface2); border-radius: 12px; padding: 12px;
+    border: 1px solid var(--border);
+  }
+  .coach-rec-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .coach-rec-body { flex: 1; }
+  .coach-rec-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 3px;
+  }
+  .coach-rec-text { font-size: 13px; color: var(--text); line-height: 1.4; }
+  .coach-week-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: #a855f7; padding: 10px 0;
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    margin-bottom: 4px; line-height: 1.6;
+  }
+  .coach-timestamp {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; color: var(--muted);
+    letter-spacing: 0.06em; margin-top: 10px; text-align: right;
+  }
+  .coach-loading-inner {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 0;
+  }
+  .coach-loading-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* PLAN */
+  .plan-schedule-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .plan-day-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--muted2);
+  }
+  .plan-day-row--key { background: rgba(232,255,0,0.04); }
+  .plan-day-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.1em;
+    color: var(--muted); text-transform: uppercase;
+    width: 26px; flex-shrink: 0; text-align: center;
+  }
+  .plan-day-badge--key { color: var(--accent); }
+  .plan-day-icon { font-size: 18px; flex-shrink: 0; width: 24px; text-align: center; }
+  .plan-day-info { flex: 1; min-width: 0; }
+  .plan-day-name {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 500; color: var(--text);
+  }
+  .plan-day-focus {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; color: var(--muted);
+    letter-spacing: 0.04em; margin-top: 2px;
+  }
+
+  .plan-week-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  .plan-week-card.current {
+    border-color: var(--accent);
+  }
+  .plan-week-card.current::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+  .plan-week-card.done { opacity: 0.5; }
+  .plan-week-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .plan-week-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .plan-week-num .w-accent { color: var(--accent); }
+  .plan-week-current-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: #000; background: var(--accent);
+    border-radius: 20px; padding: 3px 10px;
+  }
+  .plan-week-dates {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; color: var(--muted);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .plan-week-focus {
+    font-size: 13px; color: var(--muted); line-height: 1.5;
+  }
+  .plan-week-focus strong { color: var(--text); }
+  .plan-week-run {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.08em;
+    color: var(--green); margin-top: 6px;
+  }
+  .plan-week-progress {
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="screen active" id="screen-home">
+  <div class="header">
+    <div>
+      <div class="header-label">Season 8 · Puebla</div>
+      <div class="header-title">HYROX<br><span class="accent">TRACKER</span></div>
+    </div>
+    <button class="btn-settings" onclick="openSettings()" title="Configuración">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="countdown-block">
+    <div class="countdown-row">
+      <div class="countdown-num" id="days-left">—</div>
+      <div class="countdown-unit">días<br>para el<br>race day</div>
+    </div>
+    <div class="countdown-meta">
+      <div class="meta-pill">Semana <span id="current-week">1</span>/7</div>
+      <div class="meta-pill">16 Mayo 2026</div>
+      <div class="meta-pill">Meta <span>1:40</span></div>
+    </div>
+  </div>
+
+  <div class="today-block">
+    <div class="today-label">Hoy · <span id="today-date"></span></div>
+    <div class="today-workout" id="today-workout-name">—</div>
+    <div class="today-focus" id="today-focus">—</div>
+    <button class="btn-primary" id="btn-checkin-today">CHECK-IN DE HOY</button>
+    <button class="btn-secondary" id="btn-upload-shortcut">SUBIR SCREENSHOT</button>
+  </div>
+
+  <div class="section-header">Esta semana</div>
+  <div class="week-grid" id="week-grid"></div>
+
+  <div class="race-goal">
+    <div class="race-goal-icon">🏁</div>
+    <div class="race-goal-info">
+      <div class="race-goal-title">Objetivo de carrera</div>
+      <div class="race-goal-val">SUB 1:40:00</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Sesiones</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--green)" id="sessions-done-count">0</div>
+    </div>
+  </div>
+</div>
+
+<!-- CHECK-IN -->
+<div class="screen" id="screen-checkin">
+  <div class="checkin-header">
+    <div class="checkin-title" id="checkin-title">CHECK-IN</div>
+    <div class="checkin-sub" id="checkin-sub">Sube tu screenshot o llena manual</div>
+  </div>
+
+  <!-- Date selector -->
+  <div class="date-selector-wrap" id="date-selector-wrap">
+    <button class="date-arrow" id="date-prev" onclick="shiftCheckinDate(-1)">‹</button>
+    <div class="date-selector-center">
+      <input type="date" id="input-date" class="date-input-hidden">
+      <div class="date-display" id="date-display" onclick="document.getElementById('input-date').showPicker()">
+        <div class="date-display-day" id="date-display-day">—</div>
+        <div class="date-display-workout" id="date-display-workout">—</div>
+      </div>
+    </div>
+    <button class="date-arrow" id="date-next" onclick="shiftCheckinDate(1)">›</button>
+  </div>
+
+  <div class="photo-drop" id="photo-drop">
+    <input type="file" accept="image/*" id="photo-input">
+    <div class="photo-drop-icon">📸</div>
+    <div class="photo-drop-label">Screenshot de Apple Health</div>
+    <div class="photo-drop-sub">El AI extrae los datos automáticamente</div>
+  </div>
+
+  <div class="analyzing-state" id="analyzing-state">
+    <div class="spin"></div>
+    <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase">
+      Analizando workout...
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Clase / Estudio</label>
+    <select class="form-input" id="input-class" style="cursor:pointer">
+      <option value="">Selecciona clase</option>
+      <option value="BMoore Bootcamp">BMoore Bootcamp</option>
+      <option value="Indoor Cycling">Indoor Cycling</option>
+      <option value="CrossFit Cholula">CrossFit Cholula</option>
+      <option value="Rower Train">Rower Train</option>
+      <option value="Hyrox Training ZP">Hyrox Training ZP</option>
+      <option value="Run Sábado">Run Sábado</option>
+      <option value="Otro">Otro</option>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">Duración (min)</label>
+      <input type="number" class="form-input" id="input-duration" placeholder="52">
+    </div>
+    <div class="form-group">
+      <label class="form-label">BPM promedio</label>
+      <input type="number" class="form-input" id="input-bpm" placeholder="159">
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">kcal activas</label>
+      <input type="number" class="form-input" id="input-kcal" placeholder="653">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Esfuerzo (1-10)</label>
+      <input type="number" class="form-input" id="input-effort" placeholder="7" min="1" max="10">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Nota (opcional)</label>
+    <input type="text" class="form-input" id="input-note" placeholder="Cómo te sentiste...">
+  </div>
+
+  <div class="segments-preview" id="segments-preview">
+    <div class="seg-header">
+      <span>#</span><span>Tipo</span><span>Tiempo</span><span>kcal</span>
+    </div>
+    <div id="segments-body"></div>
+  </div>
+
+  <div class="submit-area">
+    <button class="btn-primary" id="btn-save-checkin">GUARDAR SESIÓN</button>
+    <button class="btn-secondary" onclick="showScreen('home')">CANCELAR</button>
+  </div>
+</div>
+
+<!-- ANALYTICS -->
+<div class="screen" id="screen-analytics">
+  <div class="header" style="display:block">
+    <div class="header-label">Performance</div>
+    <div class="header-title">ANÁLI<span class="accent">SIS</span></div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-val" id="stat-sessions">0</div>
+      <div class="stat-label">Sesiones</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="stat-avg-bpm">—</div>
+      <div class="stat-label">BPM prom</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="stat-avg-dur">—</div>
+      <div class="stat-label">Min prom</div>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title">BPM por sesión</div>
+    <div class="chart-wrap">
+      <canvas id="chart-bpm"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title">Duración por sesión (min)</div>
+    <div class="chart-wrap">
+      <canvas id="chart-dur"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title">kcal activas por sesión</div>
+    <div class="chart-wrap">
+      <canvas id="chart-kcal"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title">Sesiones por semana</div>
+    <div class="chart-wrap">
+      <canvas id="chart-weeks"></canvas>
+    </div>
+  </div>
+
+  <!-- COACH AI -->
+  <div class="coach-card" id="coach-card">
+    <div class="coach-header">
+      <div>
+        <div class="coach-label">AI Coach</div>
+        <div class="coach-title">ANÁLISIS DE<br>PROGRESO</div>
+      </div>
+      <div id="coach-status-badge" class="coach-badge" style="display:none"></div>
+    </div>
+
+    <div id="coach-empty" class="coach-empty">
+      <div style="font-size:32px;margin-bottom:10px">🤖</div>
+      <div>El AI analiza tus sesiones y te dice si vas<br>en camino al sub 1:40</div>
+    </div>
+
+    <div id="coach-result" style="display:none">
+      <div class="coach-headline" id="coach-headline"></div>
+      <div class="coach-summary" id="coach-summary"></div>
+      <div class="coach-recs" id="coach-recs"></div>
+      <div class="coach-week-note" id="coach-week-note"></div>
+      <div class="coach-timestamp" id="coach-timestamp"></div>
+    </div>
+
+    <div id="coach-loading" style="display:none">
+      <div class="coach-loading-inner">
+        <div class="spin" style="width:20px;height:20px;border-width:2px"></div>
+        <div id="coach-loading-text" class="coach-loading-text">Analizando tu progreso...</div>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="btn-run-coach" style="margin-top:16px" onclick="runCoachAnalysis()">
+      ANALIZAR MI PROGRESO
+    </button>
+  </div>
+
+  <div style="height:20px"></div>
+</div>
+
+<!-- HISTORY -->
+<div class="screen" id="screen-history">
+  <div class="header" style="display:block">
+    <div class="header-label">Registro</div>
+    <div class="header-title">HISTO<span class="accent">RIAL</span></div>
+  </div>
+  <div class="history-list" id="history-list"></div>
+</div>
+
+<!-- PLAN -->
+<div class="screen" id="screen-plan">
+  <div class="header" style="display:block">
+    <div class="header-label">7 Semanas · Sub 1:40</div>
+    <div class="header-title">PLA<span class="accent">N</span></div>
+  </div>
+
+  <!-- Weekly schedule -->
+  <div class="section-header">Rutina semanal</div>
+  <div style="padding: 0 20px 20px">
+    <div class="plan-schedule-card">
+      <div class="plan-day-row">
+        <div class="plan-day-badge">LUN</div>
+        <div class="plan-day-icon">⚡</div>
+        <div class="plan-day-info">
+          <div class="plan-day-name">BMoore Bootcamp</div>
+          <div class="plan-day-focus">Trineos · carries · nivel avanzado</div>
+        </div>
+      </div>
+      <div class="plan-day-row">
+        <div class="plan-day-badge">MAR</div>
+        <div class="plan-day-icon">🚴</div>
+        <div class="plan-day-info">
+          <div class="plan-day-name">Indoor Cycling</div>
+          <div class="plan-day-focus">Cardio base · recuperación activa</div>
+        </div>
+      </div>
+      <div class="plan-day-row">
+        <div class="plan-day-badge">MIÉ</div>
+        <div class="plan-day-icon">🏋️</div>
+        <div class="plan-day-info">
+          <div class="plan-day-name">CrossFit Cholula</div>
+          <div class="plan-day-focus">Wall balls · thrusters · +1km al final</div>
+        </div>
+      </div>
+      <div class="plan-day-row">
+        <div class="plan-day-badge">JUE</div>
+        <div class="plan-day-icon">💪</div>
+        <div class="plan-day-info">
+          <div class="plan-day-name">Rower Train</div>
+          <div class="plan-day-focus">Upper endurance 25–35 lbs · SkiErg</div>
+        </div>
+      </div>
+      <div class="plan-day-row plan-day-row--key">
+        <div class="plan-day-badge plan-day-badge--key">VIE</div>
+        <div class="plan-day-icon">🔥</div>
+        <div class="plan-day-info">
+          <div class="plan-day-name">Hyrox Training ZP <span style="color:var(--accent);font-size:9px;vertical-align:middle">★ CLAVE</span></div>
+          <div class="plan-day-focus">Run directo a estación · sin descanso</div>
+        </div>
+      </div>
+      <div class="plan-day-row">
+        <div class="plan-day-badge">SÁB</div>
+        <div class="plan-day-icon">🏃</div>
+        <div class="plan-day-info">
+          <div class="plan-day-name">Run Largo</div>
+          <div class="plan-day-focus">Zona 2 · conversacional · sin parar</div>
+        </div>
+      </div>
+      <div class="plan-day-row" style="opacity:.4;border-bottom:none">
+        <div class="plan-day-badge">DOM</div>
+        <div class="plan-day-icon">🌙</div>
+        <div class="plan-day-info">
+          <div class="plan-day-name">Descanso</div>
+          <div class="plan-day-focus">Recuperación total</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7-week progression -->
+  <div class="section-header">Progresión por semana</div>
+  <div style="padding: 0 20px 20px" id="plan-weeks"></div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="nav-btn active" data-screen="home" onclick="showScreen('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+    Inicio
+  </button>
+  <button class="nav-btn" data-screen="checkin" onclick="showScreen('checkin')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="16"/>
+      <line x1="8" y1="12" x2="16" y2="12"/>
+    </svg>
+    Check-in
+  </button>
+  <button class="nav-btn" data-screen="plan" onclick="showScreen('plan')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+      <line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+    Plan
+  </button>
+  <button class="nav-btn" data-screen="analytics" onclick="showScreen('analytics')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    </svg>
+    Análisis
+  </button>
+  <button class="nav-btn" data-screen="history" onclick="showScreen('history')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+    </svg>
+    Historial
+  </button>
+</nav>
+
+<!-- DAY DETAIL MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">—</div>
+    <div class="modal-sub" id="modal-sub">—</div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settings-overlay" onclick="closeSettings(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">CONFIGURACIÓN</div>
+    <div class="modal-sub">API Key · Datos</div>
+
+    <div id="api-key-status" class="api-key-badge" style="margin-bottom:8px"></div>
+
+    <div style="margin-bottom:14px">
+      <label class="form-label" style="display:block;margin-bottom:8px">Anthropic API Key</label>
+      <input type="password" class="form-input" id="settings-api-key" placeholder="sk-ant-...">
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:6px;letter-spacing:.08em;text-transform:uppercase">
+        Guardada solo en tu dispositivo (localStorage)
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="saveApiKey()" style="margin-bottom:8px">GUARDAR API KEY</button>
+
+    <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px">
+        Zona peligrosa
+      </div>
+      <button class="btn-secondary" onclick="clearAllData()" style="border-color:var(--accent2);color:var(--accent2)">
+        BORRAR TODOS LOS DATOS
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────
+const RACE_DATE = new Date('2026-05-16T08:00:00');
+const PLAN_START = new Date('2026-03-28T00:00:00');
+
+const SCHEDULE = {
+  1: { name: 'BMoore Bootcamp',   icon: '⚡', focus: 'Nivel <strong>avanzado</strong>. Enfócate en trineos y carries.' },
+  2: { name: 'Indoor Cycling',    icon: '🚴', focus: 'Cardio base. Recuperación activa, no te mates.' },
+  3: { name: 'CrossFit Cholula',  icon: '🏋️', focus: 'Wall balls, thrusters, deadlifts. <strong>Corre 1km al terminar sin parar.</strong>' },
+  4: { name: 'Rower Train',       icon: '💪', focus: 'Upper endurance 25-35 lbs. Piensa en el SkiErg.' },
+  5: { name: 'Hyrox Training ZP', icon: '🔥', focus: '<strong>Tu día más importante.</strong> Run directo a estación, sin descanso.' },
+  6: { name: 'Run Sábado',        icon: '🏃', focus: 'Zona 2. Sem 1-2: 5km · Sem 3-4: 7-8km. Puedes hablar mientras corres.' },
+  0: { name: 'Descanso',          icon: '🌙', focus: 'Recuperación total.', rest: true }
+};
+
+const WEEK_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+let sessions = JSON.parse(localStorage.getItem('hyrox_sessions') || '[]');
+let charts = {};
+
+function saveSessions() {
+  localStorage.setItem('hyrox_sessions', JSON.stringify(sessions));
+}
+
+// ─── NAVIGATION ─────────────────────────────────────────
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelector(`[data-screen="${name}"]`)?.classList.add('active');
+  if (name === 'analytics') { renderCharts(); loadCachedCoach(); }
+  if (name === 'history') renderHistory();
+  if (name === 'home') renderHome();
+  if (name === 'plan') renderPlan();
+  if (name === 'checkin') { setCheckinDate(dateStr(new Date())); }
+  window.scrollTo(0, 0);
+}
+
+// ─── HOME ────────────────────────────────────────────────
+function renderHome() {
+  const now = new Date();
+  const days = Math.max(0, Math.ceil((RACE_DATE - now) / 86400000));
+  document.getElementById('days-left').textContent = days;
+
+  const weekNum = Math.min(7, Math.max(1, Math.ceil((now - PLAN_START) / (7 * 86400000))));
+  document.getElementById('current-week').textContent = weekNum;
+
+  const dow = now.getDay();
+  const info = SCHEDULE[dow];
+  document.getElementById('today-date').textContent = now.toLocaleDateString('es-MX', {
+    weekday: 'long', day: 'numeric', month: 'long'
+  });
+  document.getElementById('today-workout-name').textContent = info.name;
+  document.getElementById('today-focus').innerHTML = info.focus;
+
+  const todayStr = dateStr(now);
+  const alreadyCheckedIn = sessions.some(s => s.date === todayStr);
+  const btn = document.getElementById('btn-checkin-today');
+  btn.textContent = alreadyCheckedIn ? '✓ YA REGISTRASTE HOY' : 'CHECK-IN DE HOY';
+  btn.disabled = alreadyCheckedIn;
+
+  document.getElementById('sessions-done-count').textContent = sessions.length;
+
+  renderWeekGrid();
+}
+
+function renderWeekGrid() {
+  const grid = document.getElementById('week-grid');
+  grid.innerHTML = '';
+  const now = new Date();
+  // Monday of current week
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  monday.setHours(0, 0, 0, 0);
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const dow = d.getDay();
+    const info = SCHEDULE[dow];
+    const ds = dateStr(d);
+    const done = sessions.some(s => s.date === ds);
+    const todayStr = dateStr(now);
+    const isToday = ds === todayStr;
+    const isPast = ds < todayStr;
+
+    const cell = document.createElement('div');
+    cell.className = 'day-cell';
+    if (info.rest) cell.classList.add('rest');
+    else if (done) cell.classList.add('done');
+    else if (isPast && !done && !info.rest) cell.classList.add('missed');
+    else if (isToday) cell.classList.add('today');
+
+    cell.innerHTML = `
+      <div class="day-name">${WEEK_LABELS[dow]}</div>
+      <div class="day-icon">${done ? '' : info.rest ? '🌙' : isToday ? '◉' : isPast ? '' : info.icon}</div>
+    `;
+    cell.onclick = () => openDayModal(d, info, done, sessions.find(s => s.date === ds));
+    grid.appendChild(cell);
+  }
+}
+
+function openDayModal(date, info, done, session) {
+  document.getElementById('modal-title').textContent = info.name;
+  document.getElementById('modal-sub').textContent = date.toLocaleDateString('es-MX', {
+    weekday: 'long', day: 'numeric', month: 'long'
+  });
+
+  let body = '';
+  if (done && session) {
+    body = `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+        <div class="stat-card"><div class="stat-val" style="font-size:22px">${session.duration || '—'}</div><div class="stat-label">minutos</div></div>
+        <div class="stat-card"><div class="stat-val" style="font-size:22px;color:var(--accent2)">${session.bpm || '—'}</div><div class="stat-label">bpm</div></div>
+        <div class="stat-card"><div class="stat-val" style="font-size:22px;color:var(--green)">${session.effort || '—'}</div><div class="stat-label">esfuerzo</div></div>
+      </div>
+      ${session.note ? `<div style="font-size:13px;color:var(--muted);padding:10px 0;border-top:1px solid var(--border)">"${session.note}"</div>` : ''}
+    `;
+  } else {
+    body = `<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding:10px 0">${info.rest ? 'Día de descanso' : 'Sin registro aún'}</div>`;
+    if (!info.rest) {
+      body += `<button class="btn-primary" onclick="closeModal();openCheckin('${dateStr(date)}','${info.name}')" style="margin-top:12px">HACER CHECK-IN</button>`;
+    }
+  }
+
+  document.getElementById('modal-body').innerHTML = body;
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal-overlay')) {
+    document.getElementById('modal-overlay').classList.remove('show');
+  }
+}
+
+// ─── SETTINGS ────────────────────────────────────────────
+function openSettings() {
+  const key = localStorage.getItem('hyrox_api_key') || '';
+  document.getElementById('settings-api-key').value = key;
+  updateApiKeyBadge(key);
+  document.getElementById('settings-overlay').classList.add('show');
+}
+
+function closeSettings(e) {
+  if (!e || e.target === document.getElementById('settings-overlay')) {
+    document.getElementById('settings-overlay').classList.remove('show');
+  }
+}
+
+function updateApiKeyBadge(key) {
+  const el = document.getElementById('api-key-status');
+  if (key && key.startsWith('sk-ant-')) {
+    el.className = 'api-key-badge ok';
+    el.innerHTML = '<span class="dot"></span> API Key configurada';
+  } else {
+    el.className = 'api-key-badge';
+    el.innerHTML = '<span class="dot"></span> Sin API Key · análisis de imagen desactivado';
+  }
+}
+
+function saveApiKey() {
+  const key = document.getElementById('settings-api-key').value.trim();
+  if (key) {
+    localStorage.setItem('hyrox_api_key', key);
+    updateApiKeyBadge(key);
+    showToast('API Key guardada ✓');
+    document.getElementById('settings-overlay').classList.remove('show');
+  } else {
+    localStorage.removeItem('hyrox_api_key');
+    showToast('API Key eliminada');
+  }
+}
+
+function clearAllData() {
+  if (confirm('¿Borrar todas las sesiones? Esta acción no se puede deshacer.')) {
+    sessions = [];
+    saveSessions();
+    document.getElementById('settings-overlay').classList.remove('show');
+    showToast('Datos borrados');
+    renderHome();
+  }
+}
+
+// ─── CHECKIN ─────────────────────────────────────────────
+// ─── DATE SELECTOR ───────────────────────────────────────
+function setCheckinDate(dateString) {
+  const input = document.getElementById('input-date');
+  input.value = dateString;
+  updateDateDisplay();
+}
+
+function updateDateDisplay() {
+  const val = document.getElementById('input-date').value;
+  if (!val) return;
+  // Parse as local date (YYYY-MM-DD)
+  const [y, m, d] = val.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const dow = date.getDay();
+  const info = SCHEDULE[dow];
+  const todayStr = dateStr(new Date());
+  const isToday = val === todayStr;
+  const isFuture = val > todayStr;
+
+  const dayLabel = date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'short' });
+  document.getElementById('date-display-day').textContent =
+    isToday ? 'Hoy · ' + dayLabel : isFuture ? '→ ' + dayLabel : dayLabel;
+  document.getElementById('date-display-workout').textContent = info.name;
+
+  const wrap = document.getElementById('date-selector-wrap');
+  wrap.classList.toggle('today-date', isToday);
+  wrap.classList.toggle('future-date', isFuture);
+
+  // Auto-fill class if empty
+  const cls = document.getElementById('input-class');
+  if (!cls.value && !info.rest) cls.value = info.name;
+}
+
+function shiftCheckinDate(delta) {
+  const input = document.getElementById('input-date');
+  const [y, m, d] = input.value.split('-').map(Number);
+  const date = new Date(y, m - 1, d + delta);
+  // Don't allow future dates
+  if (dateStr(date) > dateStr(new Date())) return;
+  input.value = dateStr(date);
+  document.getElementById('input-class').value = ''; // reset so auto-fill triggers
+  updateDateDisplay();
+}
+
+document.getElementById('input-date').onchange = () => {
+  document.getElementById('input-class').value = '';
+  updateDateDisplay();
+};
+
+function openCheckin(prefillDate, prefillClass) {
+  setCheckinDate(prefillDate || dateStr(new Date()));
+  if (prefillClass) document.getElementById('input-class').value = prefillClass;
+  else updateDateDisplay(); // auto-fill from day of week
+  showScreen('checkin');
+}
+
+document.getElementById('btn-checkin-today').onclick = () => openCheckin(dateStr(new Date()));
+
+document.getElementById('btn-upload-shortcut').onclick = () => {
+  openCheckin(dateStr(new Date()));
+  setTimeout(() => document.getElementById('photo-input').click(), 300);
+};
+
+document.getElementById('photo-input').onchange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  await analyzeWorkoutImage(file);
+};
+
+async function analyzeWorkoutImage(file) {
+  const apiKey = localStorage.getItem('hyrox_api_key');
+  if (!apiKey) {
+    showToast('Configura tu API Key primero ⚙');
+    openSettings();
+    return;
+  }
+
+  const analyzing = document.getElementById('analyzing-state');
+  analyzing.classList.add('show');
+
+  const base64 = await fileToBase64(file);
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `Eres un extractor de datos de workouts de Apple Health. El usuario te manda screenshots de Apple Health o Apple Watch.
+Extrae los datos y responde SOLO en JSON válido, sin texto adicional, sin markdown, sin backticks.
+Formato exacto:
+{
+  "duration_min": número o null,
+  "avg_bpm": número o null,
+  "kcal_active": número o null,
+  "effort": número del 1-10 o null,
+  "workout_type": string o null,
+  "segments": [{"num": 1, "time": "06:21", "kcal": 79, "type": "run"}] o array vacío,
+  "date": "YYYY-MM-DD" o null
+}
+Para segments, intenta detectar si son runs (km impares en hyrox) o stations (pares). Si no puedes determinarlo deja type como "unknown".`,
+        messages: [{
+          role: 'user',
+          content: [{
+            type: 'image',
+            source: { type: 'base64', media_type: file.type, data: base64.split(',')[1] }
+          }, {
+            type: 'text',
+            text: 'Extrae los datos de este workout de Apple Health.'
+          }]
+        }]
+      })
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error?.message || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const text = data.content?.find(b => b.type === 'text')?.text || '{}';
+    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+
+    if (parsed.duration_min) {
+      document.getElementById('input-duration').value = parsed.duration_min;
+      document.getElementById('input-duration').classList.add('extracted');
+    }
+    if (parsed.avg_bpm) {
+      document.getElementById('input-bpm').value = parsed.avg_bpm;
+      document.getElementById('input-bpm').classList.add('extracted');
+    }
+    if (parsed.kcal_active) {
+      document.getElementById('input-kcal').value = parsed.kcal_active;
+      document.getElementById('input-kcal').classList.add('extracted');
+    }
+    if (parsed.effort) {
+      document.getElementById('input-effort').value = parsed.effort;
+      document.getElementById('input-effort').classList.add('extracted');
+    }
+
+    if (parsed.segments?.length > 0) {
+      renderSegments(parsed.segments);
+    }
+
+    showToast('Datos extraídos ✓');
+  } catch (err) {
+    console.error('API error:', err);
+    showToast('Error: ' + (err.message || 'llena manual'));
+  }
+
+  analyzing.classList.remove('show');
+}
+
+function renderSegments(segs) {
+  const preview = document.getElementById('segments-preview');
+  const body = document.getElementById('segments-body');
+  body.innerHTML = segs.map(s => `
+    <div class="seg-row">
+      <span class="seg-num">${s.num}</span>
+      <span class="${s.type === 'run' ? 'seg-type-run' : s.type === 'station' ? 'seg-type-station' : ''}">${s.type || '—'}</span>
+      <span>${s.time || '—'}</span>
+      <span style="color:var(--muted)">${s.kcal || '—'}</span>
+    </div>
+  `).join('');
+  preview.classList.add('show');
+}
+
+document.getElementById('btn-save-checkin').onclick = () => {
+  const cls = document.getElementById('input-class').value;
+  const duration = parseInt(document.getElementById('input-duration').value);
+  const bpm = parseInt(document.getElementById('input-bpm').value);
+  const kcal = parseInt(document.getElementById('input-kcal').value);
+  const effort = parseInt(document.getElementById('input-effort').value);
+  const note = document.getElementById('input-note').value.trim();
+
+  if (!cls) { showToast('Selecciona la clase'); return; }
+
+  const selectedDate = document.getElementById('input-date').value || dateStr(new Date());
+  const [sy, sm, sd] = selectedDate.split('-').map(Number);
+  const sessionDate = new Date(sy, sm - 1, sd);
+
+  const session = {
+    id: Date.now(),
+    date: selectedDate,
+    class: cls,
+    duration: duration || null,
+    bpm: bpm || null,
+    kcal: kcal || null,
+    effort: effort || null,
+    note: note || null,
+    week: Math.min(7, Math.max(1, Math.ceil((sessionDate - PLAN_START) / (7 * 86400000))))
+  };
+
+  sessions.push(session);
+  saveSessions();
+
+  // Reset form
+  ['input-duration', 'input-bpm', 'input-kcal', 'input-effort', 'input-note'].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = '';
+    el.classList.remove('extracted');
+  });
+  document.getElementById('input-class').value = '';
+  document.getElementById('segments-preview').classList.remove('show');
+  document.getElementById('photo-input').value = '';
+
+  showToast('Sesión guardada ✓');
+  showScreen('home');
+};
+
+// ─── CHARTS ──────────────────────────────────────────────
+const CHART_DEFAULTS = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: '#1a1a1a', borderColor: '#333', borderWidth: 1,
+      titleColor: '#888', bodyColor: '#f0f0f0',
+      titleFont: { family: 'DM Mono' }, bodyFont: { family: 'DM Mono' }
+    }
+  },
+  scales: {
+    x: { grid: { color: '#1a1a1a' }, ticks: { color: '#555', font: { family: 'DM Mono', size: 9 }, maxRotation: 30 } },
+    y: { grid: { color: '#1a1a1a' }, ticks: { color: '#555', font: { family: 'DM Mono', size: 9 } } }
+  }
+};
+
+function sessionLabel(s) {
+  return s.class.split(' ')[0] + ' ' + s.date.slice(5);
+}
+
+function renderCharts() {
+  const withBpm  = sessions.filter(s => s.bpm);
+  const withDur  = sessions.filter(s => s.duration);
+  const withKcal = sessions.filter(s => s.kcal);
+
+  document.getElementById('stat-sessions').textContent = sessions.length;
+  document.getElementById('stat-avg-bpm').textContent = withBpm.length
+    ? Math.round(withBpm.reduce((a, s) => a + s.bpm, 0) / withBpm.length) : '—';
+  document.getElementById('stat-avg-dur').textContent = withDur.length
+    ? Math.round(withDur.reduce((a, s) => a + s.duration, 0) / withDur.length) : '—';
+
+  // FIX: each chart uses its own filtered labels to avoid data/label length mismatch
+  makeChart('chart-bpm',  'line', withBpm.map(sessionLabel),  withBpm.map(s => s.bpm),      '#ff3b3b');
+  makeChart('chart-dur',  'bar',  withDur.map(sessionLabel),  withDur.map(s => s.duration),  '#e8ff00');
+  makeChart('chart-kcal', 'bar',  withKcal.map(sessionLabel), withKcal.map(s => s.kcal),     '#00ff87');
+
+  // Sessions per week
+  const weekCounts = {};
+  for (let i = 1; i <= 7; i++) weekCounts[i] = 0;
+  sessions.forEach(s => { if (s.week) weekCounts[s.week] = (weekCounts[s.week] || 0) + 1; });
+  makeChart('chart-weeks', 'bar',
+    Object.keys(weekCounts).map(w => 'Sem ' + w),
+    Object.values(weekCounts),
+    '#e8ff00'
+  );
+}
+
+function makeChart(id, type, labels, data, color) {
+  if (charts[id]) { charts[id].destroy(); }
+  const ctx = document.getElementById(id).getContext('2d');
+  charts[id] = new Chart(ctx, {
+    type,
+    data: {
+      labels,
+      datasets: [{
+        data,
+        borderColor: color,
+        backgroundColor: type === 'line' ? 'transparent' : color + '33',
+        borderWidth: type === 'line' ? 2 : 0,
+        borderRadius: type === 'bar' ? 6 : 0,
+        pointBackgroundColor: color,
+        pointRadius: 4,
+        tension: 0.3
+      }]
+    },
+    options: { ...CHART_DEFAULTS }
+  });
+}
+
+// ─── HISTORY ─────────────────────────────────────────────
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  if (sessions.length === 0) {
+    list.innerHTML = '<div class="empty-state">Sin sesiones aún<br>Haz tu primer check-in</div>';
+    return;
+  }
+  const sorted = [...sessions].sort((a, b) => b.id - a.id);
+  list.innerHTML = sorted.map(s => {
+    const info = Object.values(SCHEDULE).find(sc => sc.name === s.class) || { icon: '💪' };
+    return `
+      <div class="history-item">
+        <div class="history-dot">${info.icon || '💪'}</div>
+        <div class="history-info">
+          <div class="history-name">${s.class}</div>
+          <div class="history-meta">${s.date} · Sem ${s.week} · ${s.duration ? s.duration + 'min' : '—'} · ${s.kcal ? s.kcal + 'kcal' : '—'}</div>
+          ${s.note ? `<div style="font-size:12px;color:var(--muted);margin-top:3px">"${s.note}"</div>` : ''}
+        </div>
+        <div>
+          <div class="history-bpm">${s.bpm || '—'}</div>
+          <div class="history-bpm-label">bpm</div>
+          ${s.effort ? `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-align:right;margin-top:2px">E:${s.effort}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ─── COACH AI ────────────────────────────────────────────
+async function runCoachAnalysis() {
+  const apiKey = localStorage.getItem('hyrox_api_key');
+  if (!apiKey) { showToast('Configura tu API Key primero ⚙'); openSettings(); return; }
+
+  const btn = document.getElementById('btn-run-coach');
+  const loading = document.getElementById('coach-loading');
+  const empty = document.getElementById('coach-empty');
+  const result = document.getElementById('coach-result');
+  const loadingText = document.getElementById('coach-loading-text');
+
+  btn.disabled = true;
+  empty.style.display = 'none';
+  result.style.display = 'none';
+  loading.style.display = 'block';
+  document.getElementById('coach-status-badge').style.display = 'none';
+
+  const now = new Date();
+  const currentWeek = Math.min(7, Math.max(1, Math.ceil((now - PLAN_START) / (7 * 86400000))));
+  const daysLeft = Math.max(0, Math.ceil((RACE_DATE - now) / 86400000));
+
+  // Build session summary per week
+  const weekSummary = {};
+  for (let i = 1; i <= 7; i++) {
+    const ws = sessions.filter(s => s.week === i);
+    weekSummary[i] = {
+      sessions: ws.length,
+      avgBpm: ws.filter(s=>s.bpm).length ? Math.round(ws.filter(s=>s.bpm).reduce((a,s)=>a+s.bpm,0)/ws.filter(s=>s.bpm).length) : null,
+      avgDur: ws.filter(s=>s.duration).length ? Math.round(ws.filter(s=>s.duration).reduce((a,s)=>a+s.duration,0)/ws.filter(s=>s.duration).length) : null,
+      avgKcal: ws.filter(s=>s.kcal).length ? Math.round(ws.filter(s=>s.kcal).reduce((a,s)=>a+s.kcal,0)/ws.filter(s=>s.kcal).length) : null,
+      avgEffort: ws.filter(s=>s.effort).length ? (ws.filter(s=>s.effort).reduce((a,s)=>a+s.effort,0)/ws.filter(s=>s.effort).length).toFixed(1) : null,
+      classes: [...new Set(ws.map(s=>s.class))].join(', ') || 'ninguna'
+    };
+  }
+
+  const sessionDetails = sessions.slice(-10).map(s =>
+    `${s.date} | ${s.class} | ${s.duration||'?'}min | ${s.bpm||'?'}bpm | ${s.kcal||'?'}kcal | esfuerzo:${s.effort||'?'}/10${s.note ? ' | "'+s.note+'"' : ''}`
+  ).join('\n');
+
+  const loadingMessages = [
+    'Analizando tus sesiones...',
+    'Calculando ritmo vs meta...',
+    'Evaluando progresión cardiovascular...',
+    'Generando recomendaciones...'
+  ];
+  let msgIdx = 0;
+  const msgInterval = setInterval(() => {
+    msgIdx = (msgIdx + 1) % loadingMessages.length;
+    loadingText.textContent = loadingMessages[msgIdx];
+  }, 1800);
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1200,
+        system: `Eres un coach de Hyrox experto y directo. Analizas datos de entrenamiento y das retroalimentación honesta, específica y motivadora en español.
+Responde SOLO con JSON válido, sin markdown, sin texto extra.
+Formato exacto:
+{
+  "status": "on_track" | "at_risk" | "behind",
+  "headline": "frase corta impactante en mayúsculas (máx 6 palabras)",
+  "summary": "2-3 oraciones: evaluación honesta del progreso general. Usa <strong> para énfasis.",
+  "recommendations": [
+    { "icon": "emoji", "title": "categoría (1-2 palabras)", "text": "recomendación específica y accionable" },
+    { "icon": "emoji", "title": "categoría", "text": "..." },
+    { "icon": "emoji", "title": "categoría", "text": "..." }
+  ],
+  "week_assessment": "evaluación concisa de la semana actual y qué debe hacer esta semana (1-2 oraciones)"
+}`,
+        messages: [{
+          role: 'user',
+          content: `Analiza mi progreso de entrenamiento Hyrox:
+
+META: Sub 1:40:00 en Hyrox
+RACE DAY: 16 Mayo 2026 (${daysLeft} días restantes)
+SEMANA ACTUAL: ${currentWeek} de 7
+TOTAL SESIONES: ${sessions.length}
+
+PLAN SEMANAL: Lun=BMoore Bootcamp, Mar=Indoor Cycling, Mié=CrossFit Cholula, Jue=Rower Train, Vie=Hyrox Training ZP (★CLAVE), Sáb=Run 5-8km, Dom=Descanso
+
+RESUMEN POR SEMANA:
+${Object.entries(weekSummary).map(([w, d]) =>
+  `  Sem ${w}: ${d.sessions}/6 sesiones | BPM prom: ${d.avgBpm||'N/A'} | Duración prom: ${d.avgDur||'N/A'}min | Esfuerzo prom: ${d.avgEffort||'N/A'}/10 | Clases: ${d.classes}`
+).join('\n')}
+
+ÚLTIMAS SESIONES (máx 10):
+${sessionDetails || 'Sin sesiones registradas aún'}
+
+Para sub 1:40 en Hyrox se necesita: correr 8km en ~44min (5:30/km pace) + completar 8 estaciones sin colapsar. El BPM en zona 3-4 (145-170) durante entrenamientos indica buena adaptación aeróbica. No saltarse el Hyrox del viernes es crítico.`
+        }]
+      })
+    });
+
+    clearInterval(msgInterval);
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const text = data.content?.find(b => b.type === 'text')?.text || '{}';
+    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+
+    // Render result
+    const badge = document.getElementById('coach-status-badge');
+    badge.style.display = 'block';
+    badge.className = 'coach-badge ' + (parsed.status || 'at-risk');
+    badge.textContent = parsed.status === 'on_track' ? '✓ On Track' : parsed.status === 'at_risk' ? '⚠ At Risk' : '✗ Behind';
+
+    document.getElementById('coach-headline').textContent = parsed.headline || '';
+    document.getElementById('coach-summary').innerHTML = parsed.summary || '';
+    document.getElementById('coach-recs').innerHTML = (parsed.recommendations || []).map(r => `
+      <div class="coach-rec">
+        <div class="coach-rec-icon">${r.icon}</div>
+        <div class="coach-rec-body">
+          <div class="coach-rec-title">${r.title}</div>
+          <div class="coach-rec-text">${r.text}</div>
+        </div>
+      </div>
+    `).join('');
+    document.getElementById('coach-week-note').textContent = parsed.week_assessment || '';
+
+    const ts = new Date().toLocaleDateString('es-MX', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+    document.getElementById('coach-timestamp').textContent = 'Actualizado: ' + ts;
+
+    // Cache
+    localStorage.setItem('hyrox_coach', JSON.stringify({ parsed, ts, sessionCount: sessions.length }));
+
+    loading.style.display = 'none';
+    result.style.display = 'block';
+    btn.textContent = 'ACTUALIZAR ANÁLISIS';
+
+  } catch (err) {
+    clearInterval(msgInterval);
+    console.error('Coach error:', err);
+    loading.style.display = 'none';
+    empty.style.display = 'block';
+    showToast('Error al analizar · intenta de nuevo');
+  }
+
+  btn.disabled = false;
+}
+
+function loadCachedCoach() {
+  const raw = localStorage.getItem('hyrox_coach');
+  if (!raw) return;
+  try {
+    const { parsed, ts, sessionCount } = JSON.parse(raw);
+    // Only show cache if session count hasn't changed significantly
+    if (Math.abs((sessions.length - sessionCount)) > 2) return;
+
+    const badge = document.getElementById('coach-status-badge');
+    badge.style.display = 'block';
+    badge.className = 'coach-badge ' + (parsed.status || 'at-risk');
+    badge.textContent = parsed.status === 'on_track' ? '✓ On Track' : parsed.status === 'at_risk' ? '⚠ At Risk' : '✗ Behind';
+
+    document.getElementById('coach-headline').textContent = parsed.headline || '';
+    document.getElementById('coach-summary').innerHTML = parsed.summary || '';
+    document.getElementById('coach-recs').innerHTML = (parsed.recommendations || []).map(r => `
+      <div class="coach-rec">
+        <div class="coach-rec-icon">${r.icon}</div>
+        <div class="coach-rec-body">
+          <div class="coach-rec-title">${r.title}</div>
+          <div class="coach-rec-text">${r.text}</div>
+        </div>
+      </div>
+    `).join('');
+    document.getElementById('coach-week-note').textContent = parsed.week_assessment || '';
+    document.getElementById('coach-timestamp').textContent = 'Actualizado: ' + ts;
+
+    document.getElementById('coach-empty').style.display = 'none';
+    document.getElementById('coach-result').style.display = 'block';
+    document.getElementById('btn-run-coach').textContent = 'ACTUALIZAR ANÁLISIS';
+  } catch(e) { /* ignore bad cache */ }
+}
+
+// ─── PLAN ────────────────────────────────────────────────
+const WEEK_PLAN = [
+  {
+    focus: '<strong>Base y adaptación.</strong> Conoce el ritmo de cada clase. No te exijas al máximo.',
+    run: '5 km',
+    hyrox: 'Primera simulación: completa cada estación sin timer.'
+  },
+  {
+    focus: '<strong>Construye aeróbico.</strong> Mantén BPM controlado. El cycling es recuperación activa.',
+    run: '6 km',
+    hyrox: 'Cronometra tus transiciones run → estación.'
+  },
+  {
+    focus: '<strong>Sube el volumen.</strong> En CrossFit, el 1km final es obligatorio sin importar el cansancio.',
+    run: '7 km',
+    hyrox: 'Simula 4 estaciones seguidas con 200m run entre cada una.'
+  },
+  {
+    focus: '<strong>Semana pico.</strong> Máximo volumen de la temporada. Descansa bien el domingo.',
+    run: '8 km',
+    hyrox: 'Hyrox completo: 8×1km + 8 estaciones. Cronométrate.'
+  },
+  {
+    focus: '<strong>Específico de carrera.</strong> Practica el ritmo objetivo de 1:40. Sin excesos en CrossFit.',
+    run: '6 km',
+    hyrox: 'Simula el race pace: cada 1km en ~5:30/km, estaciones al tiro.'
+  },
+  {
+    focus: '<strong>Taper.</strong> Reduce volumen 30%. Mantén intensidad. Duerme 8h+.',
+    run: '5 km',
+    hyrox: 'Sesión corta: 4×1km + 4 estaciones. Fresco para el race day.'
+  },
+  {
+    focus: '<strong>Race week.</strong> Movimiento suave lunes y martes. Miércoles descanso. Jueves 20min suave. Viernes descanso total.',
+    run: '3 km suave (lunes)',
+    hyrox: 'Solo activación: 2×1km + 2 estaciones el martes.'
+  }
+];
+
+function renderPlan() {
+  const now = new Date();
+  const currentWeek = Math.min(7, Math.max(1, Math.ceil((now - PLAN_START) / (7 * 86400000))));
+  const container = document.getElementById('plan-weeks');
+
+  container.innerHTML = WEEK_PLAN.map((w, i) => {
+    const weekNum = i + 1;
+    const weekStart = new Date(PLAN_START);
+    weekStart.setDate(PLAN_START.getDate() + i * 7);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+
+    const isCurrent = weekNum === currentWeek;
+    const isDone = weekNum < currentWeek;
+
+    const sessionsThisWeek = sessions.filter(s => s.week === weekNum).length;
+    const pct = Math.min(100, Math.round((sessionsThisWeek / 6) * 100));
+
+    const dateLabel = weekStart.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })
+      + ' – ' + weekEnd.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+
+    return `
+      <div class="plan-week-card${isCurrent ? ' current' : ''}${isDone ? ' done' : ''}">
+        <div class="plan-week-top">
+          <div class="plan-week-num">SEM <span class="w-accent">${weekNum}</span></div>
+          ${isCurrent ? '<div class="plan-week-current-badge">Ahora</div>' : ''}
+          ${isDone ? '<div style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--green);letter-spacing:.1em;text-transform:uppercase">' + sessionsThisWeek + '/6 ✓</div>' : ''}
+        </div>
+        <div class="plan-week-dates">${dateLabel}</div>
+        <div class="plan-week-focus">${w.focus}</div>
+        <div class="plan-week-run">🏃 ${w.run} · ${w.hyrox}</div>
+        ${isCurrent || isDone ? `
+          <div class="plan-week-progress">
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill" style="width:${pct}%"></div>
+            </div>
+            <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.08em">${sessionsThisWeek} sesión${sessionsThisWeek !== 1 ? 'es' : ''} registrada${sessionsThisWeek !== 1 ? 's' : ''}</div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// ─── UTILS ───────────────────────────────────────────────
+function dateStr(d) {
+  // Use local date to avoid UTC offset issues
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function fileToBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+
+// ─── INIT ────────────────────────────────────────────────
+renderHome();
+</script>
+</body>
+</html>
