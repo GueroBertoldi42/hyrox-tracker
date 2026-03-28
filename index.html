@@ -1105,6 +1105,56 @@
   </div>
 </div>
 
+<!-- EDIT SESSION MODAL -->
+<div class="modal-overlay" id="edit-overlay" onclick="closeEditModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="modal-title">EDITAR SESIÓN</div>
+      <button onclick="deleteSession()" style="background:none;border:1px solid var(--accent2);border-radius:8px;color:var(--accent2);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;cursor:pointer">Borrar</button>
+    </div>
+    <div class="modal-sub" id="edit-modal-sub">—</div>
+
+    <div style="margin-bottom:12px">
+      <label class="form-label">Clase / Estudio</label>
+      <select class="form-input" id="edit-class" style="cursor:pointer">
+        <option value="BMoore Bootcamp">BMoore Bootcamp</option>
+        <option value="Indoor Cycling">Indoor Cycling</option>
+        <option value="CrossFit Cholula">CrossFit Cholula</option>
+        <option value="Rower Train">Rower Train</option>
+        <option value="Hyrox Training ZP">Hyrox Training ZP</option>
+        <option value="Run Sábado">Run Sábado</option>
+        <option value="Otro">Otro</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:12px">
+      <div style="flex:1">
+        <label class="form-label">Duración (min)</label>
+        <input type="number" class="form-input" id="edit-duration">
+      </div>
+      <div style="flex:1">
+        <label class="form-label">BPM promedio</label>
+        <input type="number" class="form-input" id="edit-bpm">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:12px">
+      <div style="flex:1">
+        <label class="form-label">kcal activas</label>
+        <input type="number" class="form-input" id="edit-kcal">
+      </div>
+      <div style="flex:1">
+        <label class="form-label">Esfuerzo (1-10)</label>
+        <input type="number" class="form-input" id="edit-effort" min="1" max="10">
+      </div>
+    </div>
+    <div style="margin-bottom:16px">
+      <label class="form-label">Nota</label>
+      <input type="text" class="form-input" id="edit-note">
+    </div>
+    <button class="btn-primary" onclick="saveEditSession()">GUARDAR CAMBIOS</button>
+  </div>
+</div>
+
 <!-- SETTINGS MODAL -->
 <div class="modal-overlay" id="settings-overlay" onclick="closeSettings(event)">
   <div class="modal">
@@ -1616,7 +1666,7 @@ function renderHistory() {
   list.innerHTML = sorted.map(s => {
     const info = Object.values(SCHEDULE).find(sc => sc.name === s.class) || { icon: '💪' };
     return `
-      <div class="history-item">
+      <div class="history-item" onclick="openEditModal(${s.id})" style="cursor:pointer;active:opacity:.8">
         <div class="history-dot">${info.icon || '💪'}</div>
         <div class="history-info">
           <div class="history-name">${s.class}</div>
@@ -1627,10 +1677,68 @@ function renderHistory() {
           <div class="history-bpm">${s.bpm || '—'}</div>
           <div class="history-bpm-label">bpm</div>
           ${s.effort ? `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-align:right;margin-top:2px">E:${s.effort}</div>` : ''}
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);text-align:right;margin-top:4px">✎</div>
         </div>
       </div>
     `;
   }).join('');
+}
+
+let editingSessionId = null;
+
+function openEditModal(id) {
+  const s = sessions.find(s => s.id === id);
+  if (!s) return;
+  editingSessionId = id;
+
+  document.getElementById('edit-modal-sub').textContent = s.date + ' · Sem ' + s.week;
+  document.getElementById('edit-class').value    = s.class || '';
+  document.getElementById('edit-duration').value = s.duration || '';
+  document.getElementById('edit-bpm').value      = s.bpm || '';
+  document.getElementById('edit-kcal').value     = s.kcal || '';
+  document.getElementById('edit-effort').value   = s.effort || '';
+  document.getElementById('edit-note').value     = s.note || '';
+
+  document.getElementById('edit-overlay').classList.add('show');
+}
+
+function closeEditModal(e) {
+  if (!e || e.target === document.getElementById('edit-overlay')) {
+    document.getElementById('edit-overlay').classList.remove('show');
+    editingSessionId = null;
+  }
+}
+
+function saveEditSession() {
+  const idx = sessions.findIndex(s => s.id === editingSessionId);
+  if (idx === -1) return;
+
+  sessions[idx] = {
+    ...sessions[idx],
+    class:    document.getElementById('edit-class').value,
+    duration: parseInt(document.getElementById('edit-duration').value) || null,
+    bpm:      parseInt(document.getElementById('edit-bpm').value) || null,
+    kcal:     parseInt(document.getElementById('edit-kcal').value) || null,
+    effort:   parseInt(document.getElementById('edit-effort').value) || null,
+    note:     document.getElementById('edit-note').value.trim() || null,
+  };
+
+  saveSessions();
+  document.getElementById('edit-overlay').classList.remove('show');
+  editingSessionId = null;
+  showToast('Sesión actualizada ✓');
+  renderHistory();
+}
+
+function deleteSession() {
+  if (!confirm('¿Borrar esta sesión? No se puede deshacer.')) return;
+  sessions = sessions.filter(s => s.id !== editingSessionId);
+  saveSessions();
+  document.getElementById('edit-overlay').classList.remove('show');
+  editingSessionId = null;
+  showToast('Sesión borrada');
+  renderHistory();
+  renderHome();
 }
 
 // ─── COACH AI ────────────────────────────────────────────
