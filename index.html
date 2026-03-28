@@ -1063,7 +1063,7 @@
     </svg>
     Inicio
   </button>
-  <button class="nav-btn" data-screen="checkin" onclick="showScreen('checkin')">
+  <button class="nav-btn" data-screen="checkin" onclick="openCheckin()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <circle cx="12" cy="12" r="10"/>
       <line x1="12" y1="8" x2="12" y2="16"/>
@@ -1219,7 +1219,6 @@ function showScreen(name) {
   if (name === 'history') renderHistory();
   if (name === 'home') renderHome();
   if (name === 'plan') renderPlan();
-  if (name === 'checkin') { setCheckinDate(dateStr(new Date())); }
   window.scrollTo(0, 0);
 }
 
