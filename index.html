@@ -1188,7 +1188,14 @@
 <script>
 // ─── DATA ───────────────────────────────────────────────
 const RACE_DATE = new Date('2026-05-16T08:00:00');
-const PLAN_START = new Date('2026-03-28T00:00:00');
+const PLAN_START = new Date(2026, 2, 28); // local time, avoids UTC offset bug
+
+function sessionWeek(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const diffDays = (date - PLAN_START) / 86400000;
+  return Math.min(7, Math.max(1, Math.floor(diffDays / 7) + 1));
+}
 
 const SCHEDULE = {
   1: { name: 'BMoore Bootcamp',   icon: '⚡', focus: 'Nivel <strong>avanzado</strong>. Enfócate en trineos y carries.' },
@@ -1228,7 +1235,7 @@ function renderHome() {
   const days = Math.max(0, Math.ceil((RACE_DATE - now) / 86400000));
   document.getElementById('days-left').textContent = days;
 
-  const weekNum = Math.min(7, Math.max(1, Math.ceil((now - PLAN_START) / (7 * 86400000))));
+  const weekNum = sessionWeek(dateStr(now));
   document.getElementById('current-week').textContent = weekNum;
 
   const dow = now.getDay();
@@ -1564,7 +1571,7 @@ document.getElementById('btn-save-checkin').onclick = () => {
     kcal: kcal || null,
     effort: effort || null,
     note: note || null,
-    week: Math.min(7, Math.max(1, Math.ceil((sessionDate - PLAN_START) / (7 * 86400000))))
+    week: sessionWeek(selectedDate)
   };
 
   sessions.push(session);
@@ -1758,7 +1765,7 @@ async function runCoachAnalysis() {
   document.getElementById('coach-status-badge').style.display = 'none';
 
   const now = new Date();
-  const currentWeek = Math.min(7, Math.max(1, Math.ceil((now - PLAN_START) / (7 * 86400000))));
+  const currentWeek = sessionWeek(dateStr(now));
   const daysLeft = Math.max(0, Math.ceil((RACE_DATE - now) / 86400000));
 
   // Build session summary per week
@@ -1966,7 +1973,7 @@ const WEEK_PLAN = [
 
 function renderPlan() {
   const now = new Date();
-  const currentWeek = Math.min(7, Math.max(1, Math.ceil((now - PLAN_START) / (7 * 86400000))));
+  const currentWeek = sessionWeek(dateStr(now));
   const container = document.getElementById('plan-weeks');
 
   container.innerHTML = WEEK_PLAN.map((w, i) => {
