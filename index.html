@@ -736,12 +736,270 @@
     font-size: 10px; letter-spacing: 0.08em;
     color: var(--green); margin-top: 6px;
   }
-  .plan-week-progress {
-    margin-top: 10px;
+  .plan-week-progress { margin-top: 10px; }
+
+  /* ── SETUP WIZARD ─────────────────────────────────────── */
+  .setup-overlay {
+    display: none; position: fixed; inset: 0;
+    background: var(--bg); z-index: 500; overflow-y: auto;
   }
+  .setup-overlay.show { display: block; }
+  .setup-step { display: none; min-height: 100vh; padding: 56px 24px 100px; flex-direction: column; }
+  .setup-step.active { display: flex; }
+  .setup-pg { display: flex; gap: 4px; margin-bottom: 36px; }
+  .setup-pg-dot { height: 3px; flex: 1; border-radius: 2px; background: var(--border); transition: background .3s; }
+  .setup-pg-dot.done { background: var(--accent); }
+  .setup-pg-dot.active { background: rgba(232,255,0,.4); }
+  .setup-icon { font-size: 44px; margin-bottom: 16px; }
+  .setup-title { font-family: 'Bebas Neue', sans-serif; font-size: 44px; line-height: 1; letter-spacing: .02em; margin-bottom: 6px; }
+  .setup-sub { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 28px; }
+  .setup-content { flex: 1; }
+  .setup-footer { padding-top: 20px; }
+
+  .opt-grid { display: flex; flex-direction: column; gap: 10px; }
+  .opt-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .opt-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; cursor: pointer; transition: border-color .2s, background .2s; -webkit-tap-highlight-color: transparent; }
+  .opt-card.sel { border-color: var(--accent); background: rgba(232,255,0,.06); }
+  .opt-card-title { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: .04em; }
+  .opt-card-desc { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: .06em; line-height: 1.5; margin-top: 3px; }
+
+  .chk-grid { display: flex; flex-direction: column; gap: 8px; }
+  .chk-item { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; cursor: pointer; transition: border-color .2s; -webkit-tap-highlight-color: transparent; }
+  .chk-item.sel { border-color: var(--accent); }
+  .chk-box { width: 20px; height: 20px; border-radius: 6px; border: 1px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all .2s; }
+  .chk-item.sel .chk-box { background: var(--accent); border-color: var(--accent); color: #000; }
+  .chk-label { font-family: 'DM Sans', sans-serif; font-size: 14px; }
+
+  .stepper-row { display: flex; align-items: center; }
+  .stepper-minus, .stepper-plus { width: 52px; height: 52px; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color .2s; }
+  .stepper-minus { border-radius: 12px 0 0 12px; }
+  .stepper-plus  { border-radius: 0 12px 12px 0; }
+  .stepper-minus:active, .stepper-plus:active { border-color: var(--accent); }
+  .stepper-display { flex: 1; background: var(--surface2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 6px; text-align: center; }
+  .stepper-num { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--accent); line-height: 1; }
+  .stepper-lbl { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+
+  .setup-generating { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 40px 24px; text-align: center; }
+  .setup-gen-icon { font-size: 72px; margin-bottom: 24px; animation: gentlePulse 2s ease-in-out infinite; }
+  @keyframes gentlePulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+  .setup-gen-title { font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: .04em; margin-bottom: 8px; }
+  .setup-gen-msg { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; line-height: 2; min-height: 40px; }
+  .setup-plan-summary { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+  .setup-plan-row { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--muted2); }
+  .setup-plan-row:last-child { border-bottom: none; }
+  .setup-plan-lbl { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .setup-plan-val { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: .04em; color: var(--accent); }
 </style>
 </head>
 <body>
+
+<!-- SETUP WIZARD -->
+<div class="setup-overlay" id="setup-overlay">
+
+  <!-- S0: Welcome -->
+  <div class="setup-step active" id="setup-s0">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+      <div class="setup-icon">🏃</div>
+      <div class="setup-title">COACH<br><span class="accent">H</span></div>
+      <div class="setup-sub">Tu entrenador personal de Hyrox</div>
+      <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:24px">Responde 6 preguntas rápidas y el AI diseñará tu plan de entrenamiento personalizado.</p>
+      <div class="chk-grid">
+        <div class="chk-item" style="pointer-events:none"><span>📅</span><span class="chk-label" style="color:var(--muted);font-size:13px">Plan adaptado a tu carrera y nivel</span></div>
+        <div class="chk-item" style="pointer-events:none"><span>🤖</span><span class="chk-label" style="color:var(--muted);font-size:13px">AI Coach que monitorea tu progreso</span></div>
+        <div class="chk-item" style="pointer-events:none"><span>🏆</span><span class="chk-label" style="color:var(--muted);font-size:13px">Métricas específicas de Hyrox Open</span></div>
+      </div>
+    </div>
+    <div class="setup-footer"><button class="btn-primary" onclick="setupGo(1)">EMPEZAR →</button></div>
+  </div>
+
+  <!-- S1: Race date + goal -->
+  <div class="setup-step" id="setup-s1">
+    <div class="setup-pg" id="setup-pg-1"></div>
+    <div class="setup-icon">🏁</div>
+    <div class="setup-title">TU<br><span class="accent">CARRERA</span></div>
+    <div class="setup-sub">¿Cuándo y cuál es tu meta?</div>
+    <div class="setup-content">
+      <div style="margin-bottom:16px">
+        <label class="form-label">Fecha de la carrera</label>
+        <input type="date" class="form-input" id="setup-race-date">
+      </div>
+      <div style="margin-bottom:20px">
+        <label class="form-label">Ciudad / Venue (opcional)</label>
+        <input type="text" class="form-input" id="setup-race-city" placeholder="ej. Puebla, CDMX...">
+      </div>
+      <label class="form-label">Meta de tiempo</label>
+      <div class="opt-grid-2" id="setup-goal-opts">
+        <div class="opt-card" data-val="finish" onclick="selectOpt(this,'setup-goal-opts')"><div class="opt-card-title">TERMINAR</div><div class="opt-card-desc">Primera Hyrox</div></div>
+        <div class="opt-card" data-val="sub2:30" onclick="selectOpt(this,'setup-goal-opts')"><div class="opt-card-title">SUB 2:30</div><div class="opt-card-desc">Principiante</div></div>
+        <div class="opt-card" data-val="sub2:00" onclick="selectOpt(this,'setup-goal-opts')"><div class="opt-card-title">SUB 2:00</div><div class="opt-card-desc">Intermedio bajo</div></div>
+        <div class="opt-card sel" data-val="sub1:40" onclick="selectOpt(this,'setup-goal-opts')"><div class="opt-card-title">SUB 1:40</div><div class="opt-card-desc">Intermedio</div></div>
+        <div class="opt-card" data-val="sub1:20" onclick="selectOpt(this,'setup-goal-opts')"><div class="opt-card-title">SUB 1:20</div><div class="opt-card-desc">Avanzado</div></div>
+        <div class="opt-card" data-val="sub1:00" onclick="selectOpt(this,'setup-goal-opts')"><div class="opt-card-title">SUB 1:00</div><div class="opt-card-desc">Elite</div></div>
+      </div>
+    </div>
+    <div class="setup-footer">
+      <button class="btn-primary" onclick="setupNext(1)">SIGUIENTE →</button>
+      <button class="btn-secondary" onclick="setupGo(0)">ATRÁS</button>
+    </div>
+  </div>
+
+  <!-- S2: Level + experience -->
+  <div class="setup-step" id="setup-s2">
+    <div class="setup-pg" id="setup-pg-2"></div>
+    <div class="setup-icon">💪</div>
+    <div class="setup-title">TU<br><span class="accent">NIVEL</span></div>
+    <div class="setup-sub">Como atleta y experiencia en Hyrox</div>
+    <div class="setup-content">
+      <div class="opt-grid" id="setup-level-opts" style="margin-bottom:20px">
+        <div class="opt-card" data-val="beginner" onclick="selectOpt(this,'setup-level-opts')"><div class="opt-card-title">PRINCIPIANTE</div><div class="opt-card-desc">Empiezo a entrenar o llevo menos de 6 meses de forma constante</div></div>
+        <div class="opt-card" data-val="intermediate" onclick="selectOpt(this,'setup-level-opts')"><div class="opt-card-title">INTERMEDIO</div><div class="opt-card-desc">Entreno 3–5 veces/semana, tengo base de cardio y algo de fuerza</div></div>
+        <div class="opt-card" data-val="advanced" onclick="selectOpt(this,'setup-level-opts')"><div class="opt-card-title">AVANZADO</div><div class="opt-card-desc">Atleta experimentado, CrossFit/running frecuente, buen VO2max</div></div>
+      </div>
+      <label class="form-label">¿Has corrido algún Hyrox antes?</label>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <div class="opt-card sel" data-val="false" id="exp-no" onclick="toggleRaced(false)" style="flex:1;padding:12px;text-align:center"><div class="opt-card-title" style="font-size:16px">NO</div></div>
+        <div class="opt-card" data-val="true" id="exp-yes" onclick="toggleRaced(true)" style="flex:1;padding:12px;text-align:center"><div class="opt-card-title" style="font-size:16px">SÍ</div></div>
+      </div>
+      <div id="setup-exp-fields" style="display:none;flex-direction:column;gap:10px">
+        <div style="display:flex;gap:10px">
+          <div style="flex:1"><label class="form-label">¿Cuántas carreras?</label><input type="number" class="form-input" id="setup-races-count" placeholder="1" min="1"></div>
+          <div style="flex:1"><label class="form-label">Mejor tiempo</label><input type="text" class="form-input" id="setup-best-time" placeholder="1:52:30"></div>
+        </div>
+      </div>
+    </div>
+    <div class="setup-footer">
+      <button class="btn-primary" onclick="setupNext(2)">SIGUIENTE →</button>
+      <button class="btn-secondary" onclick="setupGo(1)">ATRÁS</button>
+    </div>
+  </div>
+
+  <!-- S3: Injuries -->
+  <div class="setup-step" id="setup-s3">
+    <div class="setup-pg" id="setup-pg-3"></div>
+    <div class="setup-icon">🩺</div>
+    <div class="setup-title">LESIONES &<br><span class="accent">LÍMITES</span></div>
+    <div class="setup-sub">El coach adaptará el plan</div>
+    <div class="setup-content">
+      <div class="chk-grid" id="setup-injury-grid">
+        <div class="chk-item sel" data-val="none" onclick="toggleInjury(this)"><div class="chk-box">✓</div><div class="chk-label">Sin lesiones</div></div>
+        <div class="chk-item" data-val="lower_back" onclick="toggleInjury(this)"><div class="chk-box"></div><div class="chk-label">Espalda baja</div></div>
+        <div class="chk-item" data-val="knee" onclick="toggleInjury(this)"><div class="chk-box"></div><div class="chk-label">Rodillas</div></div>
+        <div class="chk-item" data-val="shoulder" onclick="toggleInjury(this)"><div class="chk-box"></div><div class="chk-label">Hombros</div></div>
+        <div class="chk-item" data-val="hip" onclick="toggleInjury(this)"><div class="chk-box"></div><div class="chk-label">Cadera</div></div>
+        <div class="chk-item" data-val="ankle" onclick="toggleInjury(this)"><div class="chk-box"></div><div class="chk-label">Tobillo / pie</div></div>
+      </div>
+      <div style="margin-top:14px">
+        <label class="form-label">Detalles adicionales (opcional)</label>
+        <input type="text" class="form-input" id="setup-injury-notes" placeholder="ej. Tendinitis rotuliana leve...">
+      </div>
+    </div>
+    <div class="setup-footer">
+      <button class="btn-primary" onclick="setupNext(3)">SIGUIENTE →</button>
+      <button class="btn-secondary" onclick="setupGo(2)">ATRÁS</button>
+    </div>
+  </div>
+
+  <!-- S4: Availability -->
+  <div class="setup-step" id="setup-s4">
+    <div class="setup-pg" id="setup-pg-4"></div>
+    <div class="setup-icon">⏱️</div>
+    <div class="setup-title">DISPONI<br><span class="accent">BILIDAD</span></div>
+    <div class="setup-sub">¿Cuánto tiempo puedes dedicar?</div>
+    <div class="setup-content">
+      <div style="margin-bottom:28px">
+        <label class="form-label" style="margin-bottom:14px;display:block">Días de entrenamiento por semana</label>
+        <div class="stepper-row">
+          <button class="stepper-minus" onclick="stepperChange('days',-1,2,7)">−</button>
+          <div class="stepper-display"><div class="stepper-num" id="setup-days-num">5</div><div class="stepper-lbl">días/semana</div></div>
+          <button class="stepper-plus" onclick="stepperChange('days',1,2,7)">+</button>
+        </div>
+      </div>
+      <label class="form-label" style="margin-bottom:14px;display:block">Duración promedio por sesión</label>
+      <div class="opt-grid-2" id="setup-dur-opts">
+        <div class="opt-card" data-val="45" onclick="selectOpt(this,'setup-dur-opts')"><div class="opt-card-title">45 MIN</div></div>
+        <div class="opt-card sel" data-val="60" onclick="selectOpt(this,'setup-dur-opts')"><div class="opt-card-title">60 MIN</div></div>
+        <div class="opt-card" data-val="75" onclick="selectOpt(this,'setup-dur-opts')"><div class="opt-card-title">75 MIN</div></div>
+        <div class="opt-card" data-val="90" onclick="selectOpt(this,'setup-dur-opts')"><div class="opt-card-title">90+ MIN</div></div>
+      </div>
+    </div>
+    <div class="setup-footer">
+      <button class="btn-primary" onclick="setupNext(4)">SIGUIENTE →</button>
+      <button class="btn-secondary" onclick="setupGo(3)">ATRÁS</button>
+    </div>
+  </div>
+
+  <!-- S5: Facilities -->
+  <div class="setup-step" id="setup-s5">
+    <div class="setup-pg" id="setup-pg-5"></div>
+    <div class="setup-icon">🏋️</div>
+    <div class="setup-title">EQUIPO &<br><span class="accent">ACCESO</span></div>
+    <div class="setup-sub">¿Qué instalaciones tienes?</div>
+    <div class="setup-content">
+      <div class="chk-grid" id="setup-fac-grid">
+        <div class="chk-item sel" data-val="gym" onclick="toggleChk(this)"><div class="chk-box">✓</div><div class="chk-label">Gym convencional</div></div>
+        <div class="chk-item" data-val="crossfit" onclick="toggleChk(this)"><div class="chk-box"></div><div class="chk-label">CrossFit Box</div></div>
+        <div class="chk-item" data-val="cycling" onclick="toggleChk(this)"><div class="chk-box"></div><div class="chk-label">Ciclo indoor / spinning</div></div>
+        <div class="chk-item" data-val="rower" onclick="toggleChk(this)"><div class="chk-box"></div><div class="chk-label">Rower / SkiErg</div></div>
+        <div class="chk-item" data-val="track" onclick="toggleChk(this)"><div class="chk-box"></div><div class="chk-label">Pista / calle para correr</div></div>
+        <div class="chk-item" data-val="hyrox_box" onclick="toggleChk(this)"><div class="chk-box"></div><div class="chk-label">Box con trineos / sandbags</div></div>
+      </div>
+    </div>
+    <div class="setup-footer">
+      <button class="btn-primary" onclick="setupNext(5)">SIGUIENTE →</button>
+      <button class="btn-secondary" onclick="setupGo(4)">ATRÁS</button>
+    </div>
+  </div>
+
+  <!-- S6: API key check + generate -->
+  <div class="setup-step" id="setup-s6">
+    <div class="setup-pg" id="setup-pg-6"></div>
+    <div class="setup-icon">🔑</div>
+    <div class="setup-title">API<br><span class="accent">KEY</span></div>
+    <div class="setup-sub">Para generar tu plan con AI</div>
+    <div class="setup-content">
+      <p style="color:var(--muted);font-size:13px;line-height:1.6;margin-bottom:20px">El AI necesita tu Anthropic API Key para crear tu plan personalizado. Sin ella se usará un plan estándar.</p>
+      <div>
+        <label class="form-label">Anthropic API Key</label>
+        <input type="password" class="form-input" id="setup-api-key" placeholder="sk-ant-...">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:6px;letter-spacing:.08em;text-transform:uppercase">Se guarda solo en tu dispositivo</div>
+      </div>
+    </div>
+    <div class="setup-footer">
+      <button class="btn-primary" onclick="setupNext(6)">GENERAR MI PLAN →</button>
+      <button class="btn-secondary" onclick="setupSkipApiKey()">USAR PLAN ESTÁNDAR</button>
+      <button class="btn-secondary" onclick="setupGo(5)" style="margin-top:4px">ATRÁS</button>
+    </div>
+  </div>
+
+  <!-- S7: Generating -->
+  <div class="setup-step" id="setup-s7">
+    <div class="setup-generating">
+      <div class="setup-gen-icon">🤖</div>
+      <div class="setup-gen-title">COACH H<br><span class="accent">TRABAJANDO</span></div>
+      <div class="setup-gen-msg" id="setup-gen-msg">Analizando tu perfil...</div>
+      <div style="margin-top:24px;width:100%;max-width:300px">
+        <div class="progress-bar-wrap" style="height:4px"><div class="progress-bar-fill" id="setup-gen-bar" style="width:0%;transition:width 1s ease"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S8: Done -->
+  <div class="setup-step" id="setup-s8">
+    <div style="padding-top:20px">
+      <div class="setup-icon">✅</div>
+      <div class="setup-title">¡PLAN<br><span class="accent">LISTO!</span></div>
+      <div class="setup-sub" id="setup-done-sub">Tu plan personalizado</div>
+    </div>
+    <div class="setup-content" style="margin-top:20px">
+      <div class="setup-plan-summary" id="setup-plan-summary"></div>
+      <div id="setup-nutrition-tips" style="margin-top:12px"></div>
+    </div>
+    <div class="setup-footer">
+      <button class="btn-primary" onclick="finishSetup()">EMPEZAR A ENTRENAR →</button>
+    </div>
+  </div>
+
+</div>
 
 <!-- HOME -->
 <div class="screen active" id="screen-home">
@@ -861,6 +1119,17 @@
     <div class="form-group">
       <label class="form-label">Esfuerzo (1-10)</label>
       <input type="number" class="form-input" id="input-effort" placeholder="7" min="1" max="10">
+    </div>
+  </div>
+
+  <div class="form-row" id="run-fields" style="display:none">
+    <div class="form-group">
+      <label class="form-label">Distancia (km)</label>
+      <input type="number" class="form-input" id="input-distance" placeholder="5.2" step="0.1">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Ritmo (min/km)</label>
+      <input type="text" class="form-input" id="input-pace" placeholder="5:30">
     </div>
   </div>
 
@@ -986,67 +1255,10 @@
     <div class="header-title">PLA<span class="accent">N</span></div>
   </div>
 
-  <!-- Weekly schedule -->
+  <!-- Weekly schedule (dynamic) -->
   <div class="section-header">Rutina semanal</div>
   <div style="padding: 0 20px 20px">
-    <div class="plan-schedule-card">
-      <div class="plan-day-row">
-        <div class="plan-day-badge">LUN</div>
-        <div class="plan-day-icon">⚡</div>
-        <div class="plan-day-info">
-          <div class="plan-day-name">BMoore Bootcamp</div>
-          <div class="plan-day-focus">Trineos · carries · nivel avanzado</div>
-        </div>
-      </div>
-      <div class="plan-day-row">
-        <div class="plan-day-badge">MAR</div>
-        <div class="plan-day-icon">🚴</div>
-        <div class="plan-day-info">
-          <div class="plan-day-name">Indoor Cycling</div>
-          <div class="plan-day-focus">Cardio base · recuperación activa</div>
-        </div>
-      </div>
-      <div class="plan-day-row">
-        <div class="plan-day-badge">MIÉ</div>
-        <div class="plan-day-icon">🏋️</div>
-        <div class="plan-day-info">
-          <div class="plan-day-name">CrossFit Cholula</div>
-          <div class="plan-day-focus">Wall balls · thrusters · +1km al final</div>
-        </div>
-      </div>
-      <div class="plan-day-row">
-        <div class="plan-day-badge">JUE</div>
-        <div class="plan-day-icon">💪</div>
-        <div class="plan-day-info">
-          <div class="plan-day-name">Rower Train</div>
-          <div class="plan-day-focus">Upper endurance 25–35 lbs · SkiErg</div>
-        </div>
-      </div>
-      <div class="plan-day-row plan-day-row--key">
-        <div class="plan-day-badge plan-day-badge--key">VIE</div>
-        <div class="plan-day-icon">🔥</div>
-        <div class="plan-day-info">
-          <div class="plan-day-name">Hyrox Training ZP <span style="color:var(--accent);font-size:9px;vertical-align:middle">★ CLAVE</span></div>
-          <div class="plan-day-focus">Run directo a estación · sin descanso</div>
-        </div>
-      </div>
-      <div class="plan-day-row">
-        <div class="plan-day-badge">SÁB</div>
-        <div class="plan-day-icon">🏃</div>
-        <div class="plan-day-info">
-          <div class="plan-day-name">Run Largo</div>
-          <div class="plan-day-focus">Zona 2 · conversacional · sin parar</div>
-        </div>
-      </div>
-      <div class="plan-day-row" style="opacity:.4;border-bottom:none">
-        <div class="plan-day-badge">DOM</div>
-        <div class="plan-day-icon">🌙</div>
-        <div class="plan-day-info">
-          <div class="plan-day-name">Descanso</div>
-          <div class="plan-day-focus">Recuperación total</div>
-        </div>
-      </div>
-    </div>
+    <div class="plan-schedule-card" id="plan-schedule-dynamic"></div>
   </div>
 
   <!-- 7-week progression -->
@@ -1178,6 +1390,9 @@
       <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px">
         Zona peligrosa
       </div>
+      <button class="btn-secondary" onclick="redoSetup()" style="margin-bottom:8px">
+        REHACER SETUP / CAMBIAR PLAN
+      </button>
       <button class="btn-secondary" onclick="clearAllData()" style="border-color:var(--accent2);color:var(--accent2)">
         BORRAR TODOS LOS DATOS
       </button>
@@ -1187,33 +1402,111 @@
 
 <script>
 // ─── DATA ───────────────────────────────────────────────
-const RACE_DATE = new Date('2026-05-16T08:00:00');
-const PLAN_START = new Date(2026, 2, 28); // local time, avoids UTC offset bug
-
-function sessionWeek(dateStr) {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
-  const diffDays = (date - PLAN_START) / 86400000;
-  return Math.min(7, Math.max(1, Math.floor(diffDays / 7) + 1));
-}
-
-const SCHEDULE = {
-  1: { name: 'BMoore Bootcamp',   icon: '⚡', focus: 'Nivel <strong>avanzado</strong>. Enfócate en trineos y carries.' },
-  2: { name: 'Indoor Cycling',    icon: '🚴', focus: 'Cardio base. Recuperación activa, no te mates.' },
-  3: { name: 'CrossFit Cholula',  icon: '🏋️', focus: 'Wall balls, thrusters, deadlifts. <strong>Corre 1km al terminar sin parar.</strong>' },
-  4: { name: 'Rower Train',       icon: '💪', focus: 'Upper endurance 25-35 lbs. Piensa en el SkiErg.' },
-  5: { name: 'Hyrox Training ZP', icon: '🔥', focus: '<strong>Tu día más importante.</strong> Run directo a estación, sin descanso.' },
-  6: { name: 'Run Sábado',        icon: '🏃', focus: 'Zona 2. Sem 1-2: 5km · Sem 3-4: 7-8km. Puedes hablar mientras corres.' },
+const DEFAULT_SCHEDULE = {
+  1: { name: 'BMoore Bootcamp',   icon: '⚡', focus: 'Nivel <strong>avanzado</strong>. Enfócate en trineos y carries.', type: 'strength' },
+  2: { name: 'Indoor Cycling',    icon: '🚴', focus: 'Cardio base. Recuperación activa, no te mates.', type: 'cardio' },
+  3: { name: 'CrossFit Cholula',  icon: '🏋️', focus: 'Wall balls, thrusters, deadlifts. <strong>Corre 1km al terminar sin parar.</strong>', type: 'strength' },
+  4: { name: 'Rower Train',       icon: '💪', focus: 'Upper endurance 25-35 lbs. Piensa en el SkiErg.', type: 'endurance' },
+  5: { name: 'Hyrox Training ZP', icon: '🔥', focus: '<strong>Tu día más importante.</strong> Run directo a estación, sin descanso.', type: 'hyrox_specific' },
+  6: { name: 'Run Sábado',        icon: '🏃', focus: 'Zona 2. Sem 1-2: 5km · Sem 3-4: 7-8km. Puedes hablar mientras corres.', type: 'run' },
   0: { name: 'Descanso',          icon: '🌙', focus: 'Recuperación total.', rest: true }
 };
-
 const WEEK_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
-let sessions = JSON.parse(localStorage.getItem('hyrox_sessions') || '[]');
-let charts = {};
+// Active values — overridden by applyProfileData() if profile/plan exist
+let RACE_DATE  = new Date(2026, 4, 16, 8, 0, 0);
+let PLAN_START = new Date(2026, 2, 28);
+let SCHEDULE   = { ...DEFAULT_SCHEDULE };
+let TOTAL_WEEKS = 7;
+
+let profile  = JSON.parse(localStorage.getItem('hyrox_profile') || 'null');
+let plan     = JSON.parse(localStorage.getItem('hyrox_plan')    || 'null');
+let sessions = JSON.parse(localStorage.getItem('hyrox_sessions')|| '[]');
+let charts   = {};
+
+function applyProfileData() {
+  if (profile?.raceDate) RACE_DATE = new Date(profile.raceDate + 'T08:00:00');
+  if (profile?.planStart) { const [y,m,d] = profile.planStart.split('-').map(Number); PLAN_START = new Date(y, m-1, d); }
+  if (profile?.totalWeeks) TOTAL_WEEKS = profile.totalWeeks;
+  if (plan?.weeklySchedule) {
+    const s = {};
+    Object.entries(plan.weeklySchedule).forEach(([k,v]) => { s[parseInt(k)] = v; });
+    SCHEDULE = s;
+  }
+}
+applyProfileData();
+
+function sessionWeek(ds) {
+  const [y, m, d] = ds.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const diffDays = (date - PLAN_START) / 86400000;
+  return Math.min(TOTAL_WEEKS, Math.max(1, Math.floor(diffDays / 7) + 1));
+}
 
 function saveSessions() {
   localStorage.setItem('hyrox_sessions', JSON.stringify(sessions));
+}
+
+// ─── COACH H — SYSTEM PROMPT ────────────────────────────
+const SYSTEM_PROMPT = `Eres COACH H, un entrenador de élite especializado exclusivamente en Hyrox.
+
+CONOCIMIENTO DE HYROX (Open Category):
+- Formato: 8 runs de 1km intercalados con 8 estaciones funcionales
+- Estaciones (pesos Open): SkiErg 1000m · Sled Push 50m (H:152kg/M:102kg) · Sled Pull 50m (H:152kg/M:102kg) · Burpee Broad Jumps 80m · Rowing 1000m · Farmers Carry 200m (H:2×24kg/M:2×16kg) · Sandbag Lunges 100m (H:20kg/M:10kg) · Wall Balls 100 reps (H:6kg/M:4kg)
+- Zonas cardíacas: Z2 65–75% (base, conversación posible) · Z3 75–85% (tempo) · Z4 85–95% (race pace)
+- Fases: Base aeróbica → Fuerza funcional → Específico Hyrox → Tapering
+- Referencias: Elite <1:00 · Avanzado 1:00–1:20 · Intermedio 1:20–1:45 · Principiante 1:45–2:30
+
+NUTRICIÓN E HIDRATACIÓN (recomendaciones complementarias, no el core del producto):
+- Pre-entreno: carbos complejos 2–3h antes; snack rápido 30min antes si es necesario
+- Hidratación: 500ml 2h antes; 150–250ml cada 15–20min durante; electrolitos en sesiones >60min
+- Post-entreno: proteína 20–40g + carbos dentro de 30–60min
+- Race day: cena alta en carbos la noche anterior; desayuno familiar, nada nuevo
+
+SUPLEMENTOS (solo recomendaciones, no sustitutos de alimentación real):
+- Creatina monohidratada 3–5g/día: potencia y recuperación
+- Cafeína 3–6mg/kg 45–60min antes: rendimiento aeróbico y cognitivo
+- Beta-alanina 3.2g/día: esfuerzos de alta intensidad
+- Electrolitos: útil en sesiones largas o clima caliente
+
+ESTILO: Directo, concreto y motivador. Justifica con datos. Métricas específicas. Responde SIEMPRE en español. Si el atleta va mal, dilo claro con solución. Tus respuestas afectan el entrenamiento real de un atleta preparándose para Hyrox.`;
+
+async function callClaude(userMsg, extraSystem = '', maxTokens = 1500) {
+  const apiKey = localStorage.getItem('hyrox_api_key');
+  if (!apiKey) throw new Error('NO_API_KEY');
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514', max_tokens: maxTokens,
+      system: SYSTEM_PROMPT + (extraSystem ? '\n\n' + extraSystem : ''),
+      messages: [{ role: 'user', content: userMsg }]
+    })
+  });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.error?.message || `HTTP ${res.status}`); }
+  const data = await res.json();
+  return data.content?.find(b => b.type === 'text')?.text || '';
+}
+
+async function callClaudeVision(file, textPrompt, extraSystem = '', maxTokens = 1500) {
+  const apiKey = localStorage.getItem('hyrox_api_key');
+  if (!apiKey) throw new Error('NO_API_KEY');
+  const base64 = await fileToBase64(file);
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514', max_tokens: maxTokens,
+      system: SYSTEM_PROMPT + (extraSystem ? '\n\n' + extraSystem : ''),
+      messages: [{ role: 'user', content: [
+        { type: 'image', source: { type: 'base64', media_type: file.type, data: base64.split(',')[1] } },
+        { type: 'text', text: textPrompt }
+      ]}]
+    })
+  });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.error?.message || `HTTP ${res.status}`); }
+  const data = await res.json();
+  return data.content?.find(b => b.type === 'text')?.text || '';
 }
 
 // ─── NAVIGATION ─────────────────────────────────────────
@@ -1237,6 +1530,12 @@ function renderHome() {
 
   const weekNum = sessionWeek(dateStr(now));
   document.getElementById('current-week').textContent = weekNum;
+
+  // Update dynamic meta pills
+  const metaPills = document.querySelectorAll('.countdown-meta .meta-pill');
+  if (metaPills[0]) metaPills[0].innerHTML = `Semana <span>${weekNum}</span>/${TOTAL_WEEKS}`;
+  if (metaPills[1]) metaPills[1].textContent = RACE_DATE.toLocaleDateString('es-MX', {day:'numeric', month:'long', year:'numeric'});
+  if (metaPills[2] && profile?.goalTime) metaPills[2].innerHTML = `Meta <span>${profile.goalTime.toUpperCase()}</span>`;
 
   const dow = now.getDay();
   const info = SCHEDULE[dow];
@@ -1445,92 +1744,28 @@ document.getElementById('photo-input').onchange = async (e) => {
 };
 
 async function analyzeWorkoutImage(file) {
-  const apiKey = localStorage.getItem('hyrox_api_key');
-  if (!apiKey) {
-    showToast('Configura tu API Key primero ⚙');
-    openSettings();
-    return;
-  }
-
+  if (!localStorage.getItem('hyrox_api_key')) { showToast('Configura tu API Key primero ⚙'); openSettings(); return; }
   const analyzing = document.getElementById('analyzing-state');
   analyzing.classList.add('show');
-
-  const base64 = await fileToBase64(file);
-
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: `Eres un extractor de datos de workouts de Apple Health. El usuario te manda screenshots de Apple Health o Apple Watch.
-Extrae los datos y responde SOLO en JSON válido, sin texto adicional, sin markdown, sin backticks.
-Formato exacto:
-{
-  "duration_min": número o null,
-  "avg_bpm": número o null,
-  "kcal_active": número o null,
-  "effort": número del 1-10 o null,
-  "workout_type": string o null,
-  "segments": [{"num": 1, "time": "06:21", "kcal": 79, "type": "run"}] o array vacío,
-  "date": "YYYY-MM-DD" o null
-}
-Para segments, intenta detectar si son runs (km impares en hyrox) o stations (pares). Si no puedes determinarlo deja type como "unknown".`,
-        messages: [{
-          role: 'user',
-          content: [{
-            type: 'image',
-            source: { type: 'base64', media_type: file.type, data: base64.split(',')[1] }
-          }, {
-            type: 'text',
-            text: 'Extrae los datos de este workout de Apple Health.'
-          }]
-        }]
-      })
-    });
-
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      throw new Error(errData.error?.message || `HTTP ${res.status}`);
-    }
-
-    const data = await res.json();
-    const text = data.content?.find(b => b.type === 'text')?.text || '{}';
-    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
-
-    if (parsed.duration_min) {
-      document.getElementById('input-duration').value = parsed.duration_min;
-      document.getElementById('input-duration').classList.add('extracted');
-    }
-    if (parsed.avg_bpm) {
-      document.getElementById('input-bpm').value = parsed.avg_bpm;
-      document.getElementById('input-bpm').classList.add('extracted');
-    }
-    if (parsed.kcal_active) {
-      document.getElementById('input-kcal').value = parsed.kcal_active;
-      document.getElementById('input-kcal').classList.add('extracted');
-    }
-    if (parsed.effort) {
-      document.getElementById('input-effort').value = parsed.effort;
-      document.getElementById('input-effort').classList.add('extracted');
-    }
-
-    if (parsed.segments?.length > 0) {
-      renderSegments(parsed.segments);
-    }
-
+    const EXTRACT = `Extrae datos de este screenshot de Apple Health/Apple Watch. Responde SOLO JSON válido, sin markdown.
+Formato: {"duration_min":n|null,"avg_bpm":n|null,"kcal_active":n|null,"effort":n1-10|null,"distance_km":n|null,"avg_pace_per_km":"MM:SS"|null,"workout_type":str|null,"segments":[{"num":1,"time":"06:21","kcal":79,"type":"run|station|unknown"}],"date":"YYYY-MM-DD"|null}`;
+    const text = await callClaudeVision(file, 'Extrae los datos de este workout.', EXTRACT);
+    const p = JSON.parse(text.replace(/```json|```/g, '').trim());
+    const setF = (id, val, green = true) => { if (!val) return; const el = document.getElementById(id); if (!el) return; el.value = val; if (green) el.classList.add('extracted'); };
+    setF('input-duration', p.duration_min);
+    setF('input-bpm', p.avg_bpm);
+    setF('input-kcal', p.kcal_active);
+    setF('input-effort', p.effort);
+    setF('input-distance', p.distance_km);
+    setF('input-pace', p.avg_pace_per_km);
+    if (p.distance_km || p.avg_pace_per_km) document.getElementById('run-fields').style.display = 'flex';
+    if (p.segments?.length > 0) renderSegments(p.segments);
     showToast('Datos extraídos ✓');
   } catch (err) {
-    console.error('API error:', err);
-    showToast('Error: ' + (err.message || 'llena manual'));
+    if (err.message === 'NO_API_KEY') { showToast('Configura tu API Key primero ⚙'); openSettings(); }
+    else { console.error('Vision error:', err); showToast('Error: ' + (err.message || 'llena manual')); }
   }
-
   analyzing.classList.remove('show');
 }
 
@@ -1548,42 +1783,42 @@ function renderSegments(segs) {
   preview.classList.add('show');
 }
 
+// Show/hide run fields based on class
+document.getElementById('input-class').addEventListener('change', function() {
+  const v = this.value.toLowerCase();
+  const isRun = v.includes('run') || v.includes('hyrox');
+  document.getElementById('run-fields').style.display = isRun ? 'flex' : 'none';
+});
+
 document.getElementById('btn-save-checkin').onclick = () => {
   const cls = document.getElementById('input-class').value;
-  const duration = parseInt(document.getElementById('input-duration').value);
-  const bpm = parseInt(document.getElementById('input-bpm').value);
-  const kcal = parseInt(document.getElementById('input-kcal').value);
-  const effort = parseInt(document.getElementById('input-effort').value);
-  const note = document.getElementById('input-note').value.trim();
-
   if (!cls) { showToast('Selecciona la clase'); return; }
 
   const selectedDate = document.getElementById('input-date').value || dateStr(new Date());
-  const [sy, sm, sd] = selectedDate.split('-').map(Number);
-  const sessionDate = new Date(sy, sm - 1, sd);
 
   const session = {
     id: Date.now(),
     date: selectedDate,
     class: cls,
-    duration: duration || null,
-    bpm: bpm || null,
-    kcal: kcal || null,
-    effort: effort || null,
-    note: note || null,
-    week: sessionWeek(selectedDate)
+    duration:   parseInt(document.getElementById('input-duration').value) || null,
+    bpm:        parseInt(document.getElementById('input-bpm').value)      || null,
+    kcal:       parseInt(document.getElementById('input-kcal').value)     || null,
+    effort:     parseInt(document.getElementById('input-effort').value)   || null,
+    distance_km: parseFloat(document.getElementById('input-distance').value) || null,
+    avg_pace:   document.getElementById('input-pace').value.trim()        || null,
+    note:       document.getElementById('input-note').value.trim()        || null,
+    week:       sessionWeek(selectedDate)
   };
 
   sessions.push(session);
   saveSessions();
 
-  // Reset form
-  ['input-duration', 'input-bpm', 'input-kcal', 'input-effort', 'input-note'].forEach(id => {
+  ['input-duration','input-bpm','input-kcal','input-effort','input-note','input-distance','input-pace'].forEach(id => {
     const el = document.getElementById(id);
-    el.value = '';
-    el.classList.remove('extracted');
+    el.value = ''; el.classList.remove('extracted');
   });
   document.getElementById('input-class').value = '';
+  document.getElementById('run-fields').style.display = 'none';
   document.getElementById('segments-preview').classList.remove('show');
   document.getElementById('photo-input').value = '';
 
@@ -1630,7 +1865,7 @@ function renderCharts() {
 
   // Sessions per week
   const weekCounts = {};
-  for (let i = 1; i <= 7; i++) weekCounts[i] = 0;
+  for (let i = 1; i <= TOTAL_WEEKS; i++) weekCounts[i] = 0;
   sessions.forEach(s => { if (s.week) weekCounts[s.week] = (weekCounts[s.week] || 0) + 1; });
   makeChart('chart-weeks', 'bar',
     Object.keys(weekCounts).map(w => 'Sem ' + w),
@@ -1798,66 +2033,35 @@ async function runCoachAnalysis() {
     loadingText.textContent = loadingMessages[msgIdx];
   }, 1800);
 
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1200,
-        system: `Eres un coach de Hyrox experto y directo. Analizas datos de entrenamiento y das retroalimentación honesta, específica y motivadora en español.
-Responde SOLO con JSON válido, sin markdown, sin texto extra.
-Formato exacto:
-{
-  "status": "on_track" | "at_risk" | "behind",
-  "headline": "frase corta impactante en mayúsculas (máx 6 palabras)",
-  "summary": "2-3 oraciones: evaluación honesta del progreso general. Usa <strong> para énfasis.",
-  "recommendations": [
-    { "icon": "emoji", "title": "categoría (1-2 palabras)", "text": "recomendación específica y accionable" },
-    { "icon": "emoji", "title": "categoría", "text": "..." },
-    { "icon": "emoji", "title": "categoría", "text": "..." }
-  ],
-  "week_assessment": "evaluación concisa de la semana actual y qué debe hacer esta semana (1-2 oraciones)"
-}`,
-        messages: [{
-          role: 'user',
-          content: `Analiza mi progreso de entrenamiento Hyrox:
+  const planCtx = plan ? `
+PLAN PERSONALIZADO:
+- Meta: ${profile?.goalTime||'sub1:40'} | Nivel: ${profile?.level||'intermedio'} | Semanas: ${TOTAL_WEEKS}
+- Ritmo objetivo: ${plan.goalSplit?.runAvgPace||'N/A'} | Budget runs: ${plan.goalSplit?.runsBudget||'N/A'} | Budget estaciones: ${plan.goalSplit?.stationBudget||'N/A'}
+${plan.injuryNotes && plan.injuryNotes !== 'Ninguna' ? `- Lesiones: ${plan.injuryNotes}` : ''}` : '';
 
-META: Sub 1:40:00 en Hyrox
-RACE DAY: 16 Mayo 2026 (${daysLeft} días restantes)
-SEMANA ACTUAL: ${currentWeek} de 7
+  const coachExtra = `Analiza el progreso del atleta. Responde SOLO con JSON válido, sin markdown.
+${planCtx}
+Formato: {"status":"on_track"|"at_risk"|"behind","headline":"frase corta MAYÚSCULAS (máx 6 palabras)","summary":"2-3 oraciones con <strong> para énfasis","recommendations":[{"icon":"emoji","title":"categoría","text":"recomendación accionable"},{"icon":"emoji","title":"categoría","text":"..."},{"icon":"emoji","title":"categoría","text":"..."}],"week_assessment":"evaluación de esta semana (1-2 oraciones)"}`;
+
+  const userMsg = `Analiza mi progreso de entrenamiento Hyrox:
+
+META: ${(profile?.goalTime||'sub1:40').toUpperCase()}
+RACE DAY: ${RACE_DATE.toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'})} (${daysLeft} días)
+SEMANA ACTUAL: ${currentWeek} de ${TOTAL_WEEKS}
 TOTAL SESIONES: ${sessions.length}
 
-PLAN SEMANAL: Lun=BMoore Bootcamp, Mar=Indoor Cycling, Mié=CrossFit Cholula, Jue=Rower Train, Vie=Hyrox Training ZP (★CLAVE), Sáb=Run 5-8km, Dom=Descanso
+PLAN SEMANAL: ${Object.entries(SCHEDULE).map(([dow,s])=>WEEK_LABELS[dow]+'='+s.name).join(', ')}
 
 RESUMEN POR SEMANA:
-${Object.entries(weekSummary).map(([w, d]) =>
-  `  Sem ${w}: ${d.sessions}/6 sesiones | BPM prom: ${d.avgBpm||'N/A'} | Duración prom: ${d.avgDur||'N/A'}min | Esfuerzo prom: ${d.avgEffort||'N/A'}/10 | Clases: ${d.classes}`
-).join('\n')}
+${Object.entries(weekSummary).map(([w,d])=>`  Sem ${w}: ${d.sessions}/${profile?.trainingDays||6} sesiones | BPM: ${d.avgBpm||'N/A'} | Dur: ${d.avgDur||'N/A'}min | Esfuerzo: ${d.avgEffort||'N/A'}/10 | Clases: ${d.classes}`).join('\n')}
 
-ÚLTIMAS SESIONES (máx 10):
-${sessionDetails || 'Sin sesiones registradas aún'}
+ÚLTIMAS SESIONES:
+${sessionDetails||'Sin sesiones aún'}`;
 
-Para sub 1:40 en Hyrox se necesita: correr 8km en ~44min (5:30/km pace) + completar 8 estaciones sin colapsar. El BPM en zona 3-4 (145-170) durante entrenamientos indica buena adaptación aeróbica. No saltarse el Hyrox del viernes es crítico.`
-        }]
-      })
-    });
-
+  try {
+    const text = await callClaude(userMsg, coachExtra, 1400);
     clearInterval(msgInterval);
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error?.message || `HTTP ${res.status}`);
-    }
-
-    const data = await res.json();
-    const text = data.content?.find(b => b.type === 'text')?.text || '{}';
-    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+    const parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
 
     // Render result
     const badge = document.getElementById('coach-status-badge');
@@ -1893,7 +2097,8 @@ Para sub 1:40 en Hyrox se necesita: correr 8km en ~44min (5:30/km pace) + comple
     console.error('Coach error:', err);
     loading.style.display = 'none';
     empty.style.display = 'block';
-    showToast('Error al analizar · intenta de nuevo');
+    if (err.message === 'NO_API_KEY') { showToast('Configura tu API Key primero ⚙'); openSettings(); }
+    else showToast('Error al analizar · intenta de nuevo');
   }
 
   btn.disabled = false;
@@ -1933,6 +2138,25 @@ function loadCachedCoach() {
 }
 
 // ─── PLAN ────────────────────────────────────────────────
+function renderPlanSchedule() {
+  const el = document.getElementById('plan-schedule-dynamic');
+  if (!el) return;
+  const dayNames = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
+  el.innerHTML = [1,2,3,4,5,6,0].map(dow => {
+    const info = SCHEDULE[dow]; if (!info) return '';
+    const isKey = info.type === 'hyrox_specific';
+    const isRest = info.rest;
+    return `<div class="plan-day-row${isKey?' plan-day-row--key':''}${isRest?' style="opacity:.4"':''}">
+      <div class="plan-day-badge${isKey?' plan-day-badge--key':''}">${dayNames[dow]}</div>
+      <div class="plan-day-icon">${info.icon}</div>
+      <div class="plan-day-info">
+        <div class="plan-day-name">${info.name}${isKey?` <span style="color:var(--accent);font-size:9px;vertical-align:middle">★ CLAVE</span>`:''}</div>
+        <div class="plan-day-focus">${(info.focus||'').replace(/<[^>]+>/g,'')}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 const WEEK_PLAN = [
   {
     focus: '<strong>Base y adaptación.</strong> Conoce el ritmo de cada clase. No te exijas al máximo.',
@@ -1976,7 +2200,18 @@ function renderPlan() {
   const currentWeek = sessionWeek(dateStr(now));
   const container = document.getElementById('plan-weeks');
 
-  container.innerHTML = WEEK_PLAN.map((w, i) => {
+  // Update header label dynamically
+  const headerLabel = document.querySelector('#screen-plan .header-label');
+  if (headerLabel && profile) headerLabel.textContent = `${TOTAL_WEEKS} Semanas · ${(profile.goalTime||'sub1:40').toUpperCase()}`;
+
+  // Render dynamic weekly schedule
+  renderPlanSchedule();
+
+  // Use AI-generated weekPlan if available, fallback to hardcoded WEEK_PLAN
+  const weekData = plan?.weekPlan || WEEK_PLAN;
+  const expectedPerWeek = profile?.trainingDays || 6;
+
+  container.innerHTML = weekData.map((w, i) => {
     const weekNum = i + 1;
     const weekStart = new Date(PLAN_START);
     weekStart.setDate(PLAN_START.getDate() + i * 7);
@@ -1985,34 +2220,243 @@ function renderPlan() {
 
     const isCurrent = weekNum === currentWeek;
     const isDone = weekNum < currentWeek;
-
     const sessionsThisWeek = sessions.filter(s => s.week === weekNum).length;
-    const pct = Math.min(100, Math.round((sessionsThisWeek / 6) * 100));
+    const pct = Math.min(100, Math.round((sessionsThisWeek / expectedPerWeek) * 100));
+    const dateLabel = weekStart.toLocaleDateString('es-MX', { day:'numeric', month:'short' })
+      + ' – ' + weekEnd.toLocaleDateString('es-MX', { day:'numeric', month:'short' });
 
-    const dateLabel = weekStart.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })
-      + ' – ' + weekEnd.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+    const theme = w.theme || '';
+    const runLine = (w.run || w.hyrox) ? `<div class="plan-week-run">🏃 ${w.run||''}${w.hyrox ? ' · '+w.hyrox : ''}${w.targetBPM ? ' · BPM '+w.targetBPM : ''}</div>` : '';
 
     return `
       <div class="plan-week-card${isCurrent ? ' current' : ''}${isDone ? ' done' : ''}">
         <div class="plan-week-top">
-          <div class="plan-week-num">SEM <span class="w-accent">${weekNum}</span></div>
+          <div class="plan-week-num">SEM <span class="w-accent">${weekNum}</span>${theme ? `<span style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:400;color:var(--muted);margin-left:6px">${theme}</span>` : ''}</div>
           ${isCurrent ? '<div class="plan-week-current-badge">Ahora</div>' : ''}
-          ${isDone ? '<div style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--green);letter-spacing:.1em;text-transform:uppercase">' + sessionsThisWeek + '/6 ✓</div>' : ''}
+          ${isDone ? `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--green);letter-spacing:.1em;text-transform:uppercase">${sessionsThisWeek}/${expectedPerWeek} ✓</div>` : ''}
         </div>
         <div class="plan-week-dates">${dateLabel}</div>
-        <div class="plan-week-focus">${w.focus}</div>
-        <div class="plan-week-run">🏃 ${w.run} · ${w.hyrox}</div>
+        <div class="plan-week-focus">${w.focus||''}</div>
+        ${runLine}
         ${isCurrent || isDone ? `
           <div class="plan-week-progress">
-            <div class="progress-bar-wrap">
-              <div class="progress-bar-fill" style="width:${pct}%"></div>
-            </div>
-            <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.08em">${sessionsThisWeek} sesión${sessionsThisWeek !== 1 ? 'es' : ''} registrada${sessionsThisWeek !== 1 ? 's' : ''}</div>
-          </div>
-        ` : ''}
+            <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+            <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.08em">${sessionsThisWeek} sesión${sessionsThisWeek!==1?'es':''} registrada${sessionsThisWeek!==1?'s':''}</div>
+          </div>` : ''}
       </div>
     `;
   }).join('');
+}
+
+// ─── SETUP WIZARD ────────────────────────────────────────
+let setupDays = 5;
+const setupD = { raceDate:'', raceCity:'', goalTime:'sub1:40', level:'', hasRaced:false, racesCount:0, bestTime:'', injuries:['none'], injuryNotes:'', trainingDays:5, sessionDuration:60, facilities:['gym'] };
+
+function showSetup() {
+  document.getElementById('setup-overlay').classList.add('show');
+  document.querySelector('.nav').style.display = 'none';
+  const def = new Date(); def.setDate(def.getDate() + 56);
+  document.getElementById('setup-race-date').value = dateStr(def);
+  // pre-fill API key if already stored
+  const key = localStorage.getItem('hyrox_api_key');
+  if (key) document.getElementById('setup-api-key').value = key;
+  setupGo(0);
+}
+
+function hideSetup() {
+  document.getElementById('setup-overlay').classList.remove('show');
+  document.querySelector('.nav').style.display = 'flex';
+}
+
+function renderSetupProgress(step) {
+  const el = document.getElementById('setup-pg-' + step);
+  if (!el) return;
+  el.innerHTML = '';
+  for (let i = 1; i <= 6; i++) {
+    const d = document.createElement('div');
+    d.className = 'setup-pg-dot' + (i < step ? ' done' : i === step ? ' active' : '');
+    el.appendChild(d);
+  }
+}
+
+function setupGo(step) {
+  document.querySelectorAll('.setup-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('setup-s' + step).classList.add('active');
+  window.scrollTo(0, 0);
+  if (step >= 1 && step <= 6) renderSetupProgress(step);
+}
+
+function selectOpt(el, containerId) {
+  document.querySelectorAll('#' + containerId + ' .opt-card').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function toggleChk(el) {
+  el.classList.toggle('sel');
+  el.querySelector('.chk-box').textContent = el.classList.contains('sel') ? '✓' : '';
+}
+
+function toggleInjury(el) {
+  const val = el.dataset.val;
+  const noneEl = document.querySelector('#setup-injury-grid [data-val="none"]');
+  if (val === 'none') {
+    document.querySelectorAll('#setup-injury-grid .chk-item').forEach(i => { i.classList.remove('sel'); i.querySelector('.chk-box').textContent = ''; });
+    el.classList.add('sel'); el.querySelector('.chk-box').textContent = '✓';
+  } else {
+    noneEl.classList.remove('sel'); noneEl.querySelector('.chk-box').textContent = '';
+    el.classList.toggle('sel');
+    el.querySelector('.chk-box').textContent = el.classList.contains('sel') ? '✓' : '';
+  }
+}
+
+function toggleRaced(hasRaced) {
+  document.getElementById('exp-no').classList.toggle('sel', !hasRaced);
+  document.getElementById('exp-yes').classList.toggle('sel', hasRaced);
+  const f = document.getElementById('setup-exp-fields');
+  f.style.display = hasRaced ? 'flex' : 'none';
+  f.style.flexDirection = 'column';
+}
+
+function stepperChange(key, delta, min, max) {
+  if (key === 'days') {
+    setupDays = Math.min(max, Math.max(min, setupDays + delta));
+    document.getElementById('setup-days-num').textContent = setupDays;
+  }
+}
+
+function setupNext(step) {
+  if (step === 1 && !document.getElementById('setup-race-date').value) { showToast('Selecciona la fecha de tu carrera'); return; }
+  if (step === 2 && !document.querySelector('#setup-level-opts .sel')) { showToast('Selecciona tu nivel'); return; }
+  if (step === 6) {
+    const keyInput = document.getElementById('setup-api-key').value.trim();
+    if (keyInput) localStorage.setItem('hyrox_api_key', keyInput);
+    collectSetupData();
+    setupGo(7);
+    generatePlan();
+    return;
+  }
+  setupGo(step + 1);
+}
+
+function setupSkipApiKey() {
+  collectSetupData();
+  setupGo(7);
+  generatePlan();
+}
+
+function collectSetupData() {
+  setupD.raceDate      = document.getElementById('setup-race-date').value;
+  setupD.raceCity      = document.getElementById('setup-race-city').value.trim();
+  setupD.goalTime      = document.querySelector('#setup-goal-opts .sel')?.dataset.val || 'sub1:40';
+  setupD.level         = document.querySelector('#setup-level-opts .sel')?.dataset.val || 'intermediate';
+  setupD.hasRaced      = document.getElementById('exp-yes').classList.contains('sel');
+  setupD.racesCount    = parseInt(document.getElementById('setup-races-count').value) || 0;
+  setupD.bestTime      = document.getElementById('setup-best-time').value.trim();
+  setupD.injuries      = [...document.querySelectorAll('#setup-injury-grid .chk-item.sel')].map(e => e.dataset.val);
+  setupD.injuryNotes   = document.getElementById('setup-injury-notes').value.trim();
+  setupD.trainingDays  = setupDays;
+  setupD.sessionDuration = parseInt(document.querySelector('#setup-dur-opts .sel')?.dataset.val) || 60;
+  setupD.facilities    = [...document.querySelectorAll('#setup-fac-grid .chk-item.sel')].map(e => e.dataset.val);
+}
+
+async function generatePlan() {
+  const msgs = ['Analizando tu perfil...','Calculando semanas...','Diseñando tu plan...','Ajustando disponibilidad...','Personalizando sesiones...','¡Casi listo!'];
+  let mi = 0;
+  const msgEl = document.getElementById('setup-gen-msg');
+  const barEl = document.getElementById('setup-gen-bar');
+  const iv = setInterval(() => { mi = Math.min(mi+1, msgs.length-1); msgEl.textContent = msgs[mi]; barEl.style.width = ((mi+1)/msgs.length*80)+'%'; }, 1500);
+
+  const today = new Date();
+  const dow = today.getDay();
+  const toMon = dow === 1 ? 0 : dow === 0 ? 1 : (8 - dow);
+  const planStart = new Date(today); planStart.setDate(today.getDate() + toMon); planStart.setHours(0,0,0,0);
+  const raceDate = new Date(setupD.raceDate + 'T08:00:00');
+  const totalWeeks = Math.max(4, Math.min(16, Math.floor((raceDate - planStart) / (7*86400000))));
+
+  const injText = setupD.injuries.includes('none') || !setupD.injuries.length ? 'Sin lesiones' : setupD.injuries.join(', ') + (setupD.injuryNotes ? ' — '+setupD.injuryNotes : '');
+  const prompt = `Crea plan de entrenamiento Hyrox personalizado:
+PERFIL: Meta ${setupD.goalTime} | Nivel ${setupD.level} | Carrera ${setupD.raceDate} (${setupD.raceCity||'N/A'}) | ${setupD.hasRaced?`${setupD.racesCount} Hyrox previos, mejor ${setupD.bestTime||'N/A'}`:'Primera carrera'} | ${injText} | ${setupD.trainingDays} días/sem | ${setupD.sessionDuration}min/sesión | Instalaciones: ${setupD.facilities.join(', ')||'gym'}
+Plan start: ${dateStr(planStart)} | Total semanas: ${totalWeeks}
+
+Responde SOLO JSON válido sin markdown:
+{"totalWeeks":${totalWeeks},"planStart":"${dateStr(planStart)}","weeklySchedule":{"0":{"name":"Descanso","icon":"🌙","rest":true,"focus":"Recuperación total."},"1":{"name":"...","icon":"emoji","focus":"instrucción específica","type":"strength"},"2":{"name":"...","icon":"emoji","focus":"...","type":"cardio"},"3":{"name":"...","icon":"emoji","focus":"...","type":"strength"},"4":{"name":"...","icon":"emoji","focus":"...","type":"endurance"},"5":{"name":"...","icon":"emoji","focus":"...","type":"hyrox_specific"},"6":{"name":"...","icon":"emoji","focus":"...","type":"run"}},"weekPlan":[{"week":1,"theme":"tema 3-4 palabras","focus":"descripción con <strong>énfasis</strong>","run":"Xkm","keyWorkout":"nombre","targetBPM":"130-150","notes":"nota"}],"goalSplit":{"runAvgPace":"5:30/km","totalRunKm":8,"runsBudget":"44:00","stationBudget":"56:00"},"nutritionHighlights":["tip1","tip2","tip3"],"supplementHighlights":["sup1","sup2"],"injuryNotes":"consideraciones o Ninguna","planSummary":"resumen 1-2 oraciones"}`;
+
+  try {
+    let planText;
+    if (localStorage.getItem('hyrox_api_key')) {
+      planText = await callClaude(prompt, 'Responde ÚNICAMENTE JSON válido.', 3000);
+    } else {
+      planText = buildDefaultPlan(setupD, planStart, totalWeeks);
+    }
+    clearInterval(iv); barEl.style.width = '100%'; msgEl.textContent = '¡Plan generado!';
+    const parsed = JSON.parse(planText.replace(/```json|```/g,'').trim());
+    const newProfile = { ...setupD, planStart: dateStr(planStart), totalWeeks: parsed.totalWeeks||totalWeeks, setupComplete: true, createdAt: Date.now() };
+    localStorage.setItem('hyrox_profile', JSON.stringify(newProfile));
+    localStorage.setItem('hyrox_plan', JSON.stringify(parsed));
+    profile = newProfile; plan = parsed; applyProfileData();
+    setTimeout(() => { renderSetupDone(parsed, newProfile); setupGo(8); }, 700);
+  } catch(err) {
+    clearInterval(iv);
+    console.error('Plan gen error:', err);
+    const parsed = JSON.parse(buildDefaultPlan(setupD, planStart, totalWeeks));
+    const newProfile = { ...setupD, planStart: dateStr(planStart), totalWeeks, setupComplete: true, createdAt: Date.now() };
+    localStorage.setItem('hyrox_profile', JSON.stringify(newProfile));
+    localStorage.setItem('hyrox_plan', JSON.stringify(parsed));
+    profile = newProfile; plan = parsed; applyProfileData();
+    barEl.style.width = '100%';
+    setTimeout(() => { renderSetupDone(parsed, newProfile); setupGo(8); }, 500);
+  }
+}
+
+function buildDefaultPlan(d, planStart, totalWeeks) {
+  const sched = {"0":{"name":"Descanso","icon":"🌙","rest":true,"focus":"Recuperación total."},"1":{"name":"Entrenamiento Fuerza","icon":"⚡","focus":"Trineos, carries y movimientos funcionales.","type":"strength"},"2":{"name":"Cardio Aeróbico","icon":"🚴","focus":"Zona 2 constante. No más del 75% FCmax.","type":"cardio"},"3":{"name":"Funcional + Run","icon":"🏋️","focus":"Wall balls y thrusters. Termina con 1km de carrera.","type":"strength"},"4":{"name":"Resistencia Upper","icon":"💪","focus":"Remo y ejercicios de tren superior. Simula SkiErg.","type":"endurance"},"5":{"name":"Simulacro Hyrox","icon":"🔥","focus":"<strong>Sesión clave.</strong> Run directo a estación sin parar.","type":"hyrox_specific"},"6":{"name":"Run Largo","icon":"🏃","focus":"Zona 2. Ritmo conversacional.","type":"run"}};
+  const runs = [4,5,6,7,8,7,6,5,5,4,4,3,3,3,3,3];
+  const weekPlan = Array.from({length:totalWeeks},(_,i)=>{
+    const w=i+1, p=w/totalWeeks;
+    let theme,focus,notes;
+    if(p<=.25){theme='Base Aeróbica';focus='<strong>Adapta tu cuerpo al volumen.</strong> Prioriza consistencia sobre intensidad.';notes='Establece hábitos.';}
+    else if(p<=.55){theme='Fuerza Funcional';focus='<strong>Sube volumen e intensidad.</strong> No te saltes el simulacro del viernes.';notes='Progresa gradualmente.';}
+    else if(p<=.8){theme='Específico Hyrox';focus='<strong>Simula condiciones de carrera.</strong> Practica transiciones run→estación.';notes='Ritmo de competencia.';}
+    else if(w<totalWeeks){theme='Taper';focus='<strong>Reduce volumen, mantén intensidad.</strong> Duerme 8h+.';notes='Menos es más.';}
+    else{theme='Race Week';focus='<strong>Activación suave lunes y martes.</strong> Miércoles en adelante descansa.';notes='Confía en el trabajo hecho.';}
+    return {week:w,theme,focus,run:(runs[Math.min(i,runs.length-1)]||5)+'km',keyWorkout:'Simulacro Hyrox',targetBPM:p<=.3?'130-150':p<=.6?'145-165':'150-170',notes};
+  });
+  const paceMap={'finish':'7:00/km','sub2:30':'6:30/km','sub2:00':'6:00/km','sub1:40':'5:30/km','sub1:20':'4:45/km','sub1:00':'4:00/km'};
+  return JSON.stringify({totalWeeks,planStart:dateStr(planStart),weeklySchedule:sched,weekPlan,goalSplit:{runAvgPace:paceMap[d.goalTime]||'5:30/km',totalRunKm:8,runsBudget:'44:00',stationBudget:'56:00'},nutritionHighlights:['Pre-entreno: carbos complejos 2-3h antes','Post-entreno: proteína 20-40g + carbos en 30-60min','Race day: cena alta en carbos la noche anterior'],supplementHighlights:['Creatina 3-5g/día: potencia y recuperación','Cafeína 3-6mg/kg 45min antes: rendimiento aeróbico'],injuryNotes:d.injuries.includes('none')?'Ninguna':d.injuries.join(', ')+(d.injuryNotes?' — '+d.injuryNotes:''),planSummary:`Plan ${totalWeeks} semanas para ${d.goalTime}. ${d.trainingDays} días/sem, nivel ${d.level}.`});
+}
+
+function renderSetupDone(planData, profileData) {
+  const raceDate = new Date(profileData.raceDate + 'T08:00:00');
+  document.getElementById('setup-done-sub').textContent = profileData.raceCity || 'Tu plan personalizado';
+  document.getElementById('setup-plan-summary').innerHTML = `
+    <div class="setup-plan-row"><div class="setup-plan-lbl">Carrera</div><div class="setup-plan-val" style="font-size:15px;color:var(--text)">${raceDate.toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'})}</div></div>
+    <div class="setup-plan-row"><div class="setup-plan-lbl">Meta</div><div class="setup-plan-val">${(profileData.goalTime||'').toUpperCase()}</div></div>
+    <div class="setup-plan-row"><div class="setup-plan-lbl">Semanas</div><div class="setup-plan-val">${planData.totalWeeks}</div></div>
+    <div class="setup-plan-row"><div class="setup-plan-lbl">Ritmo objetivo</div><div class="setup-plan-val" style="font-size:16px">${planData.goalSplit?.runAvgPace||'—'}</div></div>
+    ${planData.injuryNotes&&planData.injuryNotes!=='Ninguna'?`<div class="setup-plan-row" style="border-bottom:none"><div class="setup-plan-lbl">Lesiones</div><div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--orange);text-align:right;flex:1;margin-left:10px">${planData.injuryNotes}</div></div>`:''}
+  `;
+  const nutEl = document.getElementById('setup-nutrition-tips');
+  if (planData.nutritionHighlights?.length) {
+    nutEl.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Nutrición</div>`
+      + planData.nutritionHighlights.map(t=>`<div style="font-size:12px;color:var(--muted);padding:4px 0;border-bottom:1px solid var(--muted2)">· ${t}</div>`).join('');
+  }
+}
+
+function finishSetup() {
+  hideSetup();
+  renderHome();
+}
+
+function redoSetup() {
+  document.getElementById('settings-overlay').classList.remove('show');
+  setupDays = profile?.trainingDays || 5;
+  document.getElementById('setup-days-num').textContent = setupDays;
+  // pre-fill from existing profile
+  if (profile) {
+    if (profile.raceDate) document.getElementById('setup-race-date').value = profile.raceDate;
+    if (profile.raceCity) document.getElementById('setup-race-city').value = profile.raceCity;
+  }
+  showSetup();
 }
 
 // ─── UTILS ───────────────────────────────────────────────
@@ -2042,7 +2486,7 @@ function showToast(msg) {
 }
 
 // ─── INIT ────────────────────────────────────────────────
-renderHome();
+if (!profile?.setupComplete) { showSetup(); } else { renderHome(); }
 </script>
 </body>
 </html>
